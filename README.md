@@ -8,6 +8,11 @@ Visual reference: the zigzag layout follows a classic corporate product
 history timeline — a central vertical axis, items alternating left/right,
 big year labels, and circular product photos.
 
+[![historymap zigzag timeline — live demo](docs/screenshot-zigzag.png)](https://kenimoto.dev/products/historymap/)
+
+*Live demo: <https://kenimoto.dev/products/historymap/> (the author's tech-book
+publishing history, generated from [`data.yaml`](data.yaml))*
+
 ## v1 scope
 
 - One layout: **zigzag** (a vertical zigzag timeline). The renderer is
