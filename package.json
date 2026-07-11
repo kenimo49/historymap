@@ -7,12 +7,18 @@
   "license": "MIT",
   "scripts": {
     "build": "node src/build.mjs",
-    "test": "node --test \"test/**/*.test.mjs\""
+    "test": "node --test \"test/**/*.test.mjs\"",
+    "deploy": "wrangler deploy",
+    "preview": "wrangler dev",
+    "deploy:cf": "npm run build && rm -rf dist-worker && mkdir -p dist-worker/products/historymap && cp dist/index.html dist-worker/index.html && cp dist/index.html dist-worker/products/historymap/index.html && wrangler deploy"
   },
   "dependencies": {
     "js-yaml": "^4.1.0"
   },
   "engines": {
     "node": ">=20"
+  },
+  "devDependencies": {
+    "wrangler": "^4.110.0"
   }
 }
