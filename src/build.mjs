@@ -9,11 +9,20 @@ import yaml from "js-yaml";
 import { validate, parseItemDate } from "./validate.mjs";
 import { resolveTheme } from "./themes.mjs";
 import { render as renderZigzag } from "./renderers/zigzag.mjs";
+import { render as renderTree } from "./renderers/tree.mjs";
+import { render as renderMetro } from "./renderers/metro.mjs";
+import { render as renderHeatmap } from "./renderers/heatmap.mjs";
+import { render as renderSnake } from "./renderers/snake.mjs";
+import { render as renderRoad } from "./renderers/road.mjs";
 
-// Renderer registry: v1 ships zigzag only. Adding `tree` / `metro` / `heatmap`
-// later just means registering another render(data, theme) function here.
+// Renderer registry: one render(data, theme) function per layout value.
 const RENDERERS = {
   zigzag: renderZigzag,
+  tree: renderTree,
+  metro: renderMetro,
+  heatmap: renderHeatmap,
+  snake: renderSnake,
+  road: renderRoad,
 };
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));

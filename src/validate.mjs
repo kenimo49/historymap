@@ -3,7 +3,7 @@
 
 import { PRESETS } from "./themes.mjs";
 
-const VALID_LAYOUTS = ["zigzag"];
+const VALID_LAYOUTS = ["zigzag", "tree", "metro", "heatmap", "snake", "road"];
 const STRING_ITEM_FIELDS = ["id", "subtitle", "description", "image", "link"];
 
 // Only these URL schemes are allowed for items[].link. Anything without a
@@ -62,7 +62,7 @@ function resolveLayout(rawLayout) {
   const layout = rawLayout ?? "zigzag";
   if (!VALID_LAYOUTS.includes(layout)) {
     throw new Error(
-      `data.yaml: "layout: ${layout}" is not supported in v1. Valid values: ${VALID_LAYOUTS.join(", ")}.`
+      `data.yaml: "layout: ${layout}" is not supported. Valid values: ${VALID_LAYOUTS.join(", ")}.`
     );
   }
   return layout;
@@ -97,15 +97,26 @@ function validateItemOptionalFields(item, label) {
 
   validateLink(item.link, label);
 
-  if (item.tags !== undefined && !Array.isArray(item.tags)) {
-    throw new Error(`${label}: "tags" must be an array.`);
+  if (item.tags !== undefined) {
+    if (!Array.isArray(item.tags)) {
+      throw new Error(`${label}: "tags" must be an array.`);
+    }
+    item.tags.forEach((tag, tagIndex) => {
+      if (typeof tag !== "string" || tag.trim() === "") {
+        throw new Error(`${label}: "tags[${tagIndex}]" must be a non-empty string.`);
+      }
+    });
   }
 
-  if (
-    item.relations !== undefined &&
-    (typeof item.relations !== "object" || Array.isArray(item.relations) || item.relations === null)
-  ) {
-    throw new Error(`${label}: "relations" must be a mapping (object). (v1 does not use its contents.)`);
+  if (item.relations !== undefined) {
+    if (typeof item.relations !== "object" || Array.isArray(item.relations) || item.relations === null) {
+      throw new Error(`${label}: "relations" must be a mapping (object).`);
+    }
+    if (item.relations.parent !== undefined && typeof item.relations.parent !== "string") {
+      throw new Error(
+        `${label}: "relations.parent" must be a string (the id of another item). Reference integrity is checked by the tree renderer.`
+      );
+    }
   }
 }
 

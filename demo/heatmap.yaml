@@ -1,0 +1,107 @@
+# Sample data.yaml for the heatmap layout.
+#
+# Everything below (company, product names, dates) is entirely fictional and
+# only meant to demonstrate the schema + grid behavior: a deliberately empty
+# year (2022), several same-month releases in one year (grid cell level 2+),
+# and year-only precision items (counted in the "unknown month" column, not
+# January).
+
+title: "Virelia Pulse リリース活動記録"
+description: "架空のサンプルデータです。Virelia Pulseシリーズのリリース頻度を活動密度グリッドで示す例です。"
+lang: ja
+layout: heatmap
+
+theme:
+  preset: navy-mono
+
+items:
+  - id: pulse-alpha
+    date: 2019-02-10
+    title: "Virelia Pulse Alpha"
+    subtitle: "社内検証版"
+    description: "テレメトリ収集の基礎機能のみを備えた最初の検証ビルド。"
+
+  - id: pulse-beta
+    date: 2019-11-05
+    title: "Virelia Pulse Beta"
+    subtitle: "限定顧客向け先行提供"
+    description: "3社のパイロット顧客に限定提供し、フィードバックを収集した版。"
+
+  - id: pulse-1-0
+    date: 2020-03-02
+    title: "Virelia Pulse 1.0"
+    subtitle: "正式版初リリース"
+    description: "一般提供を開始した最初の正式版。基本的な監視ダッシュボードを搭載。"
+    link: "https://example.com/pulse/1-0"
+
+  - id: pulse-1-1
+    date: 2020-03-20
+    title: "Virelia Pulse 1.1"
+    subtitle: "初回パッチ"
+    description: "1.0公開直後に見つかった集計バグを修正した小規模アップデート。"
+
+  - id: pulse-grid-connector
+    date: 2020-09-14
+    title: "Virelia Grid Connector"
+    subtitle: "外部監視基盤との連携機能"
+    description: "他社製の監視基盤へメトリクスを転送する拡張モジュール。"
+
+  - id: pulse-retrospective-2021
+    date: 2021
+    title: "Virelia Pulse 2021年振り返り"
+    subtitle: "年次レポート"
+    description: "月日を特定しない年次の総括記事。活動密度グリッドでは月不明列に計上される。"
+
+  - id: pulse-grid-connector-2
+    date: 2021-07-01
+    title: "Virelia Grid Connector 2.0"
+    subtitle: "対応基盤を拡大"
+    description: "連携先の監視基盤を3種類から7種類に拡大した更新版。"
+    link: "https://example.com/pulse/grid-connector-2-0"
+
+  # NOTE: 2022 is intentionally left without any items to exercise the
+  # "item-less year still gets a grid row" behavior.
+
+  - id: pulse-beacon
+    date: 2023-01-15
+    title: "Virelia Beacon"
+    subtitle: "軽量エージェント"
+    description: "リソース消費を大幅に抑えた軽量版エージェント。組み込み機器向け。"
+
+  - id: pulse-beacon-hotfix
+    date: 2023-01-28
+    title: "Virelia Beacon Hotfix"
+    subtitle: "緊急修正"
+    description: "一部環境で発生していたメモリリークに対する緊急修正版。"
+
+  - id: pulse-sensor-mesh
+    date: 2023-08-09
+    title: "Virelia Sensor Mesh"
+    subtitle: "分散センサー対応"
+    description: "複数拠点のセンサー群を束ねてひとつのビューで扱えるようにした機能。"
+
+  - id: pulse-retrospective-2024
+    date: 2024
+    title: "Virelia Pulse 2024年振り返り"
+    subtitle: "年次レポート"
+    description: "こちらも月日を特定しない年次の総括記事。"
+
+  - id: pulse-sensor-mesh-2
+    date: 2024-05-05
+    title: "Virelia Sensor Mesh 2.0"
+    subtitle: "リアルタイム集計対応"
+    description: "集計をバッチ処理からリアルタイム処理に切り替えた大型アップデート。"
+    link: "https://example.com/pulse/sensor-mesh-2-0"
+
+  - id: pulse-edgesync
+    date: 2025-06-18
+    title: "Virelia EdgeSync"
+    subtitle: "エッジ同期モジュール"
+    description: "オフライン環境でも動作し、復帰時に自動同期するモジュール。"
+
+  - id: pulse-edgesync-lts
+    date: 2026-01-30
+    title: "Virelia EdgeSync LTS"
+    subtitle: "長期サポート版"
+    description: "長期サポートを約束したLTS版。今後の主力ラインとなる予定。"
+    link: "https://example.com/pulse/edgesync-lts"

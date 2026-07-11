@@ -185,7 +185,7 @@ test("unsupported layout value fails with a clear error", () => {
     dir,
     `
 title: "Bad Layout"
-layout: tree
+layout: spiral
 items:
   - date: 2020
     title: "Something"

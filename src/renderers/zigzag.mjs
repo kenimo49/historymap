@@ -4,26 +4,9 @@
 // CDN dependencies; images may reference external URLs or local files
 // that build.mjs has already copied into dist/).
 
-const CONNECTOR_WIDTH = 28;
+import { escapeHtml, buildHeightScript } from "./shared.mjs";
 
-function escapeHtml(value) {
-  return String(value ?? "").replace(/[&<>"']/g, (ch) => {
-    switch (ch) {
-      case "&":
-        return "&amp;";
-      case "<":
-        return "&lt;";
-      case ">":
-        return "&gt;";
-      case '"':
-        return "&quot;";
-      case "'":
-        return "&#39;";
-      default:
-        return ch;
-    }
-  });
-}
+const CONNECTOR_WIDTH = 28;
 
 function renderImage(item) {
   if (!item.image) return "";
@@ -348,22 +331,6 @@ function buildStyle(theme) {
         height: 100px;
       }
     }`;
-}
-
-function buildHeightScript() {
-  return `
-    (function () {
-      function sendHeight() {
-        var height = document.documentElement.scrollHeight;
-        parent.postMessage({ type: "historymap:height", height: height }, "*");
-      }
-      if (typeof ResizeObserver !== "undefined") {
-        var observer = new ResizeObserver(sendHeight);
-        observer.observe(document.documentElement);
-      }
-      window.addEventListener("load", sendHeight);
-      sendHeight();
-    })();`;
 }
 
 /**

@@ -126,8 +126,83 @@ items:                          # 必須。1件以上
 - permissionsは最小権限（job単位）: `build` job は `contents: read` のみ、`deploy` job にだけ
   `pages: write` + `id-token: write`（+ `contents: read`）を付与する。workflowトップレベルには置かない
 
-## 将来（v1では実装しない）
+## v2 パターン拡張（2026-07-11 設計）
 
-- レイアウト追加: tree（派生系譜）、metro（テーマ路線図）、heatmap
+v1のzigzagに加え、5レイアウトを追加する: `tree` / `metro` / `heatmap` / `snake` / `road`。
+`layout:` の値で切り替える。スキーマ（data.yaml）は既存のまま拡張しない —
+tree は予約済み `relations.parent`、metro は予約済み `tags` を初めて実際に使う。
+
+### 全レンダラー共通の契約
+
+- シグネチャ: `render(data, theme) => string`（完全なHTML文書）。`data.items` は
+  build.mjs が正規化済み（`id` 一意、`displayLabel` 付与、date昇順ソート、image解決済み）
+- **self-contained**: 外部CDN・外部フォント・外部JS禁止。inline SVG は可
+- `src/renderers/shared.mjs` の `escapeHtml` / `buildHeightScript` / `wrapDocument` を使う。
+  ユーザー由来文字列は全て `escapeHtml` を通す（zigzag と同水準）
+- link は `target="_blank" rel="noopener"`（スキーム検証は validate.mjs 済み）
+- navy-mono 美学: フラット・細線・余白広め。グラデーション・絵文字・角丸過多・影過多は禁止
+- ページ末尾クレジット（zigzag と同一マークアップ）、iframe高さ自動通知スクリプト内蔵
+- モバイル（<640px）で破綻しないフォールバックを持つ
+- 追加の描画専用検証（例: tree の親参照）はレンダラー内で行い、**明確なメッセージのErrorを投げてビルドを落とす**
+- 月精度の再判定が必要な場合は `validate.mjs` の `parseItemDate` を import して使う（displayLabelの文字列判定をしない）
+- テスト: `test/<layout>.test.mjs` に node:test で「正常データで必須マーカーを含むHTMLが出る」
+  「異常データが明確なエラーで落ちる」を最低限。デモデータは `demo/<layout>.yaml`（架空データ、sample.yaml と同トーン）
+
+### tree — 派生系譜図
+
+- `relations.parent: <id>` で親子を表現。parent の無い item = ルート（複数可）
+- 検証（レンダラー内）: parent が存在しない id を参照 → エラー / 循環参照 → エラー
+- 描画: 縦ツリー（ルート上、子孫下）。CSSのみ（ネストした ul/li + border による連結線）、JS レイアウト計算なし
+- ノード = 年ラベル（accent色・太字）+ title + subtitle（小）+ 円形画像（あれば、zigzag同様 contain）
+- 兄弟ノードは date 昇順。複数ルートは縦に並べる
+- モバイル: インデント幅を縮めた縦リスト表示に落とす
+
+### metro — 路線図
+
+- `tags` = 路線。tag ごとに固定パレットから出現順に色を割当。パレット8色
+  （navy #0f2a43 / teal #2f6f6a / ochre #b98a2f / rust #a4502e / plum #6e4a6e / slate #5a6b7a / moss #5f7a3f / wine #7a3b47）、
+  9路線以上は循環。最初の路線は theme.accent を優先
+- 全 item が tags 空 → 単一路線（accent色）として成立させる
+- 縦型路線図: 路線が縦に平行に走り、駅 = 白丸+路線色の枠。date 昇順に上から下へ
+- 複数 tags を持つ item = 乗換駅（大きめの白丸を該当路線すべてに跨がせる）
+- 駅の右側に年ラベル + title + subtitle。ヘッダー下に凡例（tag名と路線色）
+- モバイル: 路線間隔を詰める（横スクロールさせない）
+
+### heatmap — 活動密度グリッド
+
+- GitHub contributions 風。行 = 年（古→新、上→下）、列 = 1〜12月 + 「月不明」列（年のみ精度のitem用）
+- セル色 = そのセルの item 数。0 = 薄グレー、1〜4+ = accent のアルファ段階（4段階）
+- セルの title 属性に該当 item の title を列挙。セルはその年セクションへのアンカーリンク
+- グリッドの下に年ごとの item 一覧（年見出し + 日付・title・link の行）。ここが実質の本文
+- 月精度判定は `parseItemDate` の `hasMonth` を使う
+- モバイル: グリッドをそのまま縮小（min-width確保のため横スクロール可、本文一覧は折返し）
+
+### snake — サーペンタインマップ（参考: カリキュラムロードマップ型）
+
+- item を横一行に N 個並べ、行末で U 字に折り返す連続トラック（パイプ状の太い帯、角丸）
+- 1行 N=4（960px基準）。<640px は縦一直線トラックに単純化
+- DOM順は常に date 昇順。偶数行は左→右、奇数行は右→左（CSS `direction` / `row-reverse` で視覚反転、読み上げ順は維持）
+- ノード = トラック上の円（accent塗り・白縁）。画像がある item は円形サムネイル（白背景 contain）をノードにする
+- ノードの上下交互にラベル（年 = 大きめ accent、title 太字、subtitle 小）
+- トラック色は line 色ベース（薄め）、折り返し半円は border-radius + 透明border で CSS 描画（画像不使用）
+
+### road — ワインディングロード（参考: 道路インフォグラフィック型）
+
+- inline SVG で S 字カーブの道路を描く: 太い路面（濃色）+ 白の破線センターライン（`stroke-dasharray`）
+- 道路パスは item 数から機械生成（固定行高 × 行数で viewBox を決め、行ごとに左右へ蛇行する滑らかな三次ベジェ）
+- マイルストーン = 道路上のドロップピン（SVG、accent色、白丸の中に 1..N の番号）
+- 年 + title + description のテキストブロックは HTML でピン近傍に左右交互配置（SVGは背景レイヤー、テキストはCSS grid）
+- モバイル: 縦直線道路 + 左寄せテキストに単純化
+- 路面色は `#3a3a3a` 固定ではなく text 色を基準に導出（テーマ変更に追従させる）
+
+### 共有インフラ（v2で導入）
+
+- `src/renderers/shared.mjs`: `escapeHtml` / `buildHeightScript` / `wrapDocument`（head+body枠+クレジット+高さ通知の共通シェル）。zigzag も移行済み
+- `build.mjs` の RENDERERS に6レイアウト登録、`validate.mjs` の VALID_LAYOUTS 拡張
+- `tags` の要素は文字列であることを validate.mjs で検証（metro 以外の layout でも一律）
+- `relations.parent` は存在する場合、文字列であることを validate.mjs で検証（参照整合と循環は tree レンダラー側）
+
+## 将来（v2でも実装しない）
+
 - 同一data.yamlからAstroコンポーネント等でのビルド時レンダリング（iframeなし自サイト統合）
 - npm CLI公開（`npx historymap build`）

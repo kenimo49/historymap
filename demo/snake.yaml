@@ -1,0 +1,78 @@
+# Sample data.yaml for the `snake` (serpentine roadmap) layout.
+#
+# Everything below (company, product names, dates, images) is entirely
+# fictional and only meant to demonstrate the schema. Replace it with your
+# own product history, then push to main — GitHub Actions will build and
+# deploy dist/ to GitHub Pages automatically.
+
+title: "Virelia Systems — Field Robotics Roadmap"
+description: "架空のサンプルデータです。Virelia Systemsのフィールドロボティクス部門が10のマイルストーンを経て歩んだ道のりを、蛇行するロードマップ形式で示す例です。"
+lang: ja
+layout: snake
+
+theme:
+  preset: navy-mono
+
+items:
+  - id: fr-concept
+    date: 2016-03-01
+    title: "コンセプト実証機 FR-0"
+    subtitle: "研究室内デモ"
+    link: "https://example.com/products/fr-0"
+
+  - id: fr-10
+    date: 2017-09-12
+    title: "Virelia FR-10"
+    subtitle: "屋外走行試作"
+    image: "https://placehold.co/300x300/0f2a43/ffffff?text=FR-10"
+    link: "https://example.com/products/fr-10"
+
+  - id: fr-15
+    date: 2018-11-05
+    title: "Virelia FR-15"
+    subtitle: "耐候筐体モデル"
+    link: "https://example.com/products/fr-15"
+
+  - id: fr-20
+    date: 2019-06-20
+    title: "Virelia FR-20"
+    subtitle: "遠隔操作対応"
+    link: "https://example.com/products/fr-20"
+
+  - id: fr-arm-kit
+    date: 2020-04-14
+    title: "Manipulator Kit"
+    subtitle: "アーム後付けオプション"
+    image: "https://placehold.co/300x300/0f2a43/ffffff?text=Arm+Kit"
+    link: "https://example.com/products/arm-kit"
+
+  - id: fr-30
+    date: 2021-08-01
+    title: "Virelia FR-30"
+    subtitle: "自律走行アルゴリズム刷新"
+    link: "https://example.com/products/fr-30"
+
+  - id: fr-fleet
+    date: 2022-10-19
+    title: "Fleet Ops Console"
+    subtitle: "複数台管理ソフトウェア"
+    link: "https://example.com/products/fleet-ops"
+
+  - id: fr-40
+    date: 2023-05-09
+    title: "Virelia FR-40"
+    subtitle: "バッテリー駆動時間2倍"
+    image: "https://placehold.co/300x300/0f2a43/ffffff?text=FR-40"
+    link: "https://example.com/products/fr-40"
+
+  - id: fr-vision
+    date: 2024-12-02
+    title: "Vision Module V2"
+    subtitle: "障害物検知の高精度化"
+    link: "https://example.com/products/vision-v2"
+
+  - id: fr-50
+    date: 2026-02-27
+    title: "Virelia FR-50"
+    subtitle: "現行フラッグシップ"
+    link: "https://example.com/products/fr-50"

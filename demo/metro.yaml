@@ -1,0 +1,82 @@
+# Sample data.yaml for historymap's "metro" layout.
+#
+# Everything below (company, product names, dates) is entirely fictional and
+# only meant to demonstrate the schema. `tags` become the parallel "lines"
+# of the route map; items with 2+ tags render as interchange stations.
+
+title: "Virelia Systems 統合路線図"
+description: "架空のサンプルデータです。コントローラ系・ソフトウェア系・サービス系の3路線が、時には乗換駅で合流しながら発展してきた様子を路線図として示す例です。"
+lang: ja
+layout: metro
+
+theme:
+  preset: navy-mono
+
+items:
+  - id: virelia-rc-1
+    date: 1995-03-01
+    title: "Virelia RC-1"
+    subtitle: "リレー制御盤代替の初号機"
+    tags: ["コントローラ系"]
+    link: "https://example.com/products/rc-1"
+
+  - id: virelia-rc-5
+    date: 2001-05-10
+    title: "Virelia RC-5"
+    subtitle: "多軸対応モデル"
+    tags: ["コントローラ系"]
+
+  - id: virelia-os-launch
+    date: 2006-09-01
+    title: "Virelia OS 1.0"
+    subtitle: "設定・監視用ソフトウェアの初版"
+    tags: ["ソフトウェア系"]
+
+  - id: virelia-rc-cloud
+    date: 2009-11-20
+    title: "Virelia RC-Cloud"
+    subtitle: "初のクラウド接続対応コントローラ"
+    tags: ["コントローラ系", "サービス系"]
+
+  - id: virelia-os-2
+    date: 2012-04-15
+    title: "Virelia OS 2.0"
+    subtitle: "GUI刷新・多言語対応"
+    tags: ["ソフトウェア系"]
+
+  - id: virelia-care-plan
+    date: 2014-08-01
+    title: "Virelia Care Plan"
+    subtitle: "遠隔保守サービスの提供開始"
+    tags: ["サービス系"]
+
+  - id: virelia-mx-30
+    date: 2016-02-10
+    title: "Virelia MX-30"
+    subtitle: "モーションコントローラ第3世代"
+    tags: ["コントローラ系"]
+
+  - id: virelia-os-suite
+    date: 2018-06-05
+    title: "Virelia OS Suite"
+    subtitle: "監視サービスと統合したパッケージ版"
+    tags: ["ソフトウェア系", "サービス系"]
+
+  - id: virelia-edgelink
+    date: 2021-09-01
+    title: "Virelia EdgeLink"
+    subtitle: "コントローラとソフトウェアを結ぶ統合基盤"
+    tags: ["コントローラ系", "ソフトウェア系"]
+    link: "https://example.com/products/edgelink"
+
+  - id: virelia-care-plus
+    date: 2023-03-20
+    title: "Virelia Care+"
+    subtitle: "予兆保全機能を追加した保守プラン"
+    tags: ["サービス系"]
+
+  - id: virelia-nexus
+    date: 2026-01-10
+    title: "Virelia Nexus"
+    subtitle: "3系統を統合した次世代プラットフォーム"
+    tags: ["コントローラ系", "ソフトウェア系", "サービス系"]

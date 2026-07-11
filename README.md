@@ -2,7 +2,8 @@
 
 Turn a YAML file into a company-style "product history" timeline — a static,
 self-contained HTML page you can host on GitHub Pages and embed anywhere via
-`<iframe>`.
+`<iframe>`. Six layouts from the same data file: `zigzag`, `tree`, `metro`,
+`heatmap`, `snake`, and `road`.
 
 Visual reference: the zigzag layout follows a classic corporate product
 history timeline — a central vertical axis, items alternating left/right,
@@ -13,11 +14,18 @@ big year labels, and circular product photos.
 *Live demo: <https://kenimoto.dev/products/historymap/> (the author's tech-book
 publishing history, generated from [`data.yaml`](data.yaml))*
 
-## v1 scope
+## Scope
 
-- One layout: **zigzag** (a vertical zigzag timeline). The renderer is
-  isolated behind a plugin boundary so future layouts (`tree`, `metro`,
-  `heatmap`) can be added without touching this one.
+- Six layouts selected by the `layout:` field, all rendered from the same
+  `data.yaml` schema (each renderer lives behind a plugin boundary):
+  - **zigzag** — vertical timeline, central axis, items alternating left/right
+  - **tree** — derivation genealogy driven by `relations.parent` (product family trees)
+  - **metro** — subway-map style lines driven by `tags` (one colored line per tag, interchange stations for multi-tag items)
+  - **heatmap** — GitHub-contributions-style year × month activity grid with a per-year listing below
+  - **snake** — serpentine curriculum-map track that U-turns at the end of each row
+  - **road** — winding SVG road with a dashed centerline and numbered milestone pins
+- Try them: each layout has a fictional demo file under `demo/`
+  (`demo/tree.yaml`, `demo/metro.yaml`, ...) you can copy as a starting point.
 - Output is a **single self-contained `dist/index.html`** file — CSS and JS
   inlined, no external CDN dependencies. Images may reference external URLs.
 - The generated page notifies its embedding parent of its height via
@@ -53,7 +61,7 @@ Open `dist/index.html` directly in a browser to preview.
 | `title` | yes | — | Page `<h1>` and `<title>` |
 | `description` | no | `""` | `<meta description>` and header subtitle |
 | `lang` | no | `en` | `<html lang>` |
-| `layout` | no | `zigzag` | v1 only supports `zigzag`; any other value fails the build |
+| `layout` | no | `zigzag` | One of `zigzag`, `tree`, `metro`, `heatmap`, `snake`, `road`; any other value fails the build |
 | `theme.preset` | no | `navy-mono` | `navy-mono` or `plain` |
 | `theme.accent` | no | preset value | Accent color (year labels, links) |
 | `theme.background` | no | preset value | Page background color |
@@ -80,8 +88,8 @@ block); anything else — including HTML/CSS metacharacters like `< > { } ; \`
 | `description` | no | 2–3 lines of body text |
 | `image` | no | URL, or a path relative to the **directory containing `data.yaml`** (not the repo root). Rendered as a circular photo |
 | `link` | no | Makes the whole card a link (`target="_blank" rel="noopener"`) |
-| `tags` | no | Reserved for the future `metro` layout; not rendered in v1 |
-| `relations` | no | Reserved field (e.g. `parent: <id>`); only schema-validated in v1, otherwise ignored |
+| `tags` | no | Used by the `metro` layout (one line per tag, multi-tag items become interchange stations); elements must be non-empty strings. Not rendered by other layouts |
+| `relations` | no | `parent: <id>` is used by the `tree` layout to build the genealogy. The `tree` build fails on a reference to a non-existent id or a circular chain. Ignored by other layouts |
 
 Items are sorted by `date` ascending (oldest first, top to bottom). A
 year-only date such as `2026` is treated as `2026-01-01` for sorting. The
@@ -202,9 +210,16 @@ historymap/
 │   ├── validate.mjs       # schema validation
 │   ├── themes.mjs         # theme presets
 │   └── renderers/
-│       └── zigzag.mjs     # zigzag layout renderer
+│       ├── shared.mjs     # escapeHtml / height-notify script / document shell
+│       ├── zigzag.mjs     # one file per layout renderer
+│       ├── tree.mjs
+│       ├── metro.mjs
+│       ├── heatmap.mjs
+│       ├── snake.mjs
+│       └── road.mjs
+├── demo/                  # fictional sample data, one per layout
 ├── test/
-│   └── build.test.mjs
+│   └── build.test.mjs     # plus one test file per layout
 ├── worker/
 │   └── index.js           # kenimoto.dev deployment glue (see note below)
 └── .github/workflows/
@@ -221,9 +236,8 @@ deployed anywhere else serves plain static files with no injection and no extern
 requests. If you fork this repo, deleting `worker/` (and those two `wrangler.jsonc`
 entries) is still recommended for clarity.
 
-## Not in v1
+## Not implemented
 
-- Additional layouts (`tree`, `metro`, `heatmap`)
 - Build-time rendering into Astro/React components (no-iframe integration)
 - Publishing as an npm CLI (`npx historymap build`)
 

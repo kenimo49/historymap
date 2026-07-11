@@ -1,0 +1,95 @@
+# Sample data.yaml for the "tree" (派生系譜図) layout.
+#
+# Everything below (company, product names, dates, images) is entirely
+# fictional and only meant to demonstrate the schema — same Virelia Systems
+# world as demo/sample.yaml, reused here to show off relations.parent.
+
+title: "Virelia Systems 製品系譜"
+description: "架空のサンプルデータです。Vireliaシリーズ製品の派生関係を系譜図として示す例です。"
+lang: ja
+layout: tree
+
+theme:
+  preset: navy-mono
+
+items:
+  # --- CT line (root 1) ---
+  - id: virelia-ct-100
+    date: 1998-04-01
+    title: "Virelia CT-100"
+    subtitle: "初代プログラマブルコントローラ"
+    description: "小規模生産ラインを想定した最初のシリーズ。リレー制御盤の置き換えを目的に開発された。"
+    link: "https://example.com/products/ct-100"
+
+  - id: virelia-ct-220
+    date: 2004-09-10
+    title: "Virelia CT-220"
+    subtitle: "通信機能強化モデル"
+    description: "産業用ネットワーク対応を追加し、複数ラインをまとめて監視できるようにした後継機。"
+    image: "https://placehold.co/400x560/0f2a43/ffffff?text=CT-220"
+    link: "https://example.com/products/ct-220"
+    relations:
+      parent: virelia-ct-100
+
+  - id: virelia-ct-330
+    date: 2012-05-01
+    title: "Virelia CT-330"
+    subtitle: "大規模ライン向け上位機"
+    description: "CT-220の通信基盤を継承しつつ、I/O点数を拡張して大規模プラント向けに再設計した。"
+    link: "https://example.com/products/ct-330"
+    relations:
+      parent: virelia-ct-220
+
+  - id: virelia-ct-compact
+    date: 2015-11-03
+    title: "Virelia CT-Compact"
+    subtitle: "省スペースモデル"
+    description: "CT-220の機能を維持したまま筐体を半分以下に縮小した、盤内スペース制約向けの派生型。"
+    link: "https://example.com/products/ct-compact"
+    relations:
+      parent: virelia-ct-220
+
+  - id: virelia-ct-compact-mk2
+    date: 2020-02-20
+    title: "Virelia CT-Compact Mk2"
+    subtitle: "無線オプション追加版"
+    description: "CT-Compactの筐体寸法を維持したまま、無線モジュールの後付けオプションに対応させた改良版。"
+    link: "https://example.com/products/ct-compact-mk2"
+    relations:
+      parent: virelia-ct-compact
+
+  # --- MX line (root 2) ---
+  - id: virelia-mx-10
+    date: 2011-01-15
+    title: "Virelia MX-10"
+    subtitle: "モーションコントローラ"
+    description: "サーボ制御を統合し、精密な位置決めが必要な設備向けに設計されたシリーズ。"
+    link: "https://example.com/products/mx-10"
+
+  - id: virelia-mx-20
+    date: 2017-06-20
+    title: "Virelia MX-20"
+    subtitle: "省電力設計モデル"
+    description: "消費電力を旧モデル比で大きく削減し、筐体サイズも一回り小さくした改良版。"
+    image: "https://placehold.co/400x560/0f2a43/ffffff?text=MX-20"
+    link: "https://example.com/products/mx-20"
+    relations:
+      parent: virelia-mx-10
+
+  - id: virelia-mx-lite
+    date: 2019-03-10
+    title: "Virelia MX-Lite"
+    subtitle: "エントリーモデル"
+    description: "軸数を絞り価格を抑えた普及モデル。小規模設備への導入ハードルを下げる目的で派生した。"
+    link: "https://example.com/products/mx-lite"
+    relations:
+      parent: virelia-mx-10
+
+  - id: virelia-mx-edge
+    date: 2023-09-01
+    title: "Virelia MX-Edge"
+    subtitle: "統合エッジコントローラ"
+    description: "MX-20の制御基盤にエッジ側での推論処理とクラウド連携を統合した最新シリーズ。"
+    link: "https://example.com/products/mx-edge"
+    relations:
+      parent: virelia-mx-20

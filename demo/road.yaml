@@ -1,0 +1,59 @@
+# Demo data.yaml for the "road" (winding road) renderer.
+#
+# Everything below (company, people, dates, figures) is entirely fictional,
+# meant only to demonstrate the layout with milestone-shaped events. Replace
+# it with your own history and set layout: road in your own data.yaml.
+
+title: "Virelia Labs ロードマップ"
+description: "架空のスタートアップVirelia Labsの創業から現在までの歩みを、道路上のマイルストーンとして示すサンプルです。"
+lang: ja
+layout: road
+
+theme:
+  preset: navy-mono
+
+items:
+  - id: founding
+    date: 2018-03-01
+    title: "Virelia Labs 創業"
+    subtitle: "3人のチームで始動"
+    description: "産業用センサーの誤検知を減らすソフトウェアを作るため、小さな倉庫の一角でチームを立ち上げた。"
+
+  - id: seed-round
+    date: 2019-11-05
+    title: "シードラウンド調達"
+    subtitle: "初の外部資金"
+    description: "国内の製造業向けファンドから調達し、最初の量産版センサーゲートウェイの開発に着手した。"
+    link: "https://example.com/virelia/news/seed-round"
+
+  - id: first-contract
+    date: 2021-02-18
+    title: "初の商用契約"
+    subtitle: "中堅製造業3社と導入契約"
+    description: "実証実験から本契約に移行し、ライン監視データを継続的に扱う最初の顧客基盤ができた。"
+
+  - id: cloud-launch
+    date: 2022-07-01
+    title: "Virelia Cloud 正式ローンチ"
+    subtitle: "SaaS版の提供開始"
+    description: "オンプレ専用だった監視基盤をクラウド化し、拠点をまたいだ複数工場の一括監視に対応した。"
+    link: "https://example.com/virelia/products/cloud"
+
+  - id: europe-office
+    date: 2023-09-12
+    title: "欧州拠点を開設"
+    subtitle: "海外展開の第一歩"
+    description: "現地パートナーとの協業を前提に、ドイツに小規模な技術サポート拠点を設けた。"
+
+  - id: nomicon-acquisition
+    date: 2024-12-01
+    title: "Nomicon社を買収"
+    subtitle: "異常検知アルゴリズムの内製化"
+    description: "画像ベースの異常検知に強みを持つ競合スタートアップを買収し、検知精度を大きく引き上げた。"
+
+  - id: milestone-1000
+    date: 2026-04-20
+    title: "累計導入1,000社を突破"
+    subtitle: "最新のマイルストーン"
+    description: "創業から8年、国内外あわせて1,000社を超える製造現場でVireliaの監視基盤が稼働している。"
+    link: "https://example.com/virelia/news/1000-customers"
