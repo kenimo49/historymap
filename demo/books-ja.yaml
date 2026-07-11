@@ -1,0 +1,91 @@
+title: "Ken Imoto — Tech Books History"
+description: "技術書の出版ヒストリー"
+lang: ja
+layout: zigzag
+theme:
+  preset: navy-mono
+items:
+  - id: claude-code-mastery
+    date: 2025-09-01
+    title: "実践Claude Code"
+    description: "Claude Code を1年以上、実務で使い込んだ。"
+    image: https://kenimoto.dev/images/books/claude-code-mastery.png
+    link: https://kenimoto.dev/ja/books/claude-code-mastery/
+
+  - id: context-engineering
+    date: 2026-02-15
+    title: "LLMを「嘘つき」から「専門家」に変える技術"
+    description: "「同じ質問なのに、AIの回答が全然違う」原因はプロンプトではなくコンテキストにあります。"
+    image: https://kenimoto.dev/images/books/context-engineering.png
+    link: https://kenimoto.dev/ja/books/context-engineering/
+
+  - id: llmo-ai-search-optimization
+    date: 2026-02-20
+    title: "なぜあなたのサイトはChatGPTに無視されるのか"
+    description: "Google SEO だけでは ChatGPT / Perplexity に届かない。"
+    image: https://kenimoto.dev/images/books/llmo.png
+    link: https://kenimoto.dev/ja/books/llmo-ai-search-optimization/
+
+  - id: harness-engineering-guide
+    date: 2026-03-15
+    title: "ハーネス・エンジニアリング"
+    description: "ハーネスエンジニアリングを、OpenAI・Anthropic・LangChain・Martin Fowler・学術の5つの解釈で横断的に整理した最初の体系書。"
+    image: https://kenimoto.dev/images/books/harness-engineering-guide.png
+    link: https://kenimoto.dev/ja/books/harness-engineering-guide/
+
+  - id: mcp-security-practice
+    date: 2026-03-25
+    title: "MCP実践セキュリティ"
+    description: "MCP (Model Context Protocol) を本番導入する前に読むべきセキュリティガイド。"
+    image: https://kenimoto.dev/images/books/mcp-security.png
+    link: https://kenimoto.dev/ja/books/mcp-security-practice/
+
+  - id: harness-code-review
+    date: 2026-04-01
+    title: "AIコードレビューを仕組み化する技術"
+    description: "AIコードレビューを仕組み化する3層モデル。"
+    image: https://kenimoto.dev/images/books/harness-code-review.png
+    link: https://kenimoto.dev/ja/books/harness-code-review/
+
+  - id: llmo-quickstart
+    date: 2026-04-10
+    title: "LLMOクイックスタート"
+    description: "LLMO (AI検索最適化) を30分で始めるための入門書。"
+    image: https://kenimoto.dev/images/books/llmo-quickstart.jpg
+    link: https://kenimoto.dev/ja/books/llmo-quickstart/
+
+  - id: voice-ai-300ms-ux
+    date: 2026-04-25
+    title: "音声AIの300ms"
+    description: "音声AIの体験は『速さ』で9割決まる。"
+    image: https://kenimoto.dev/images/books/voice-ai-300ms-ux.jpg
+    link: https://kenimoto.dev/ja/books/voice-ai-300ms-ux/
+
+  - id: knowledge-graph-practical-guide
+    date: 2026-04-28
+    title: "ナレッジグラフ活用大全"
+    description: "RAG だけでは AI は賢くならない。"
+    image: https://kenimoto.dev/images/books/knowledge-graph-practical-guide.png
+    link: https://kenimoto.dev/ja/books/knowledge-graph-practical-guide/
+
+  - id: engineer-it-quotes
+    date: 2026-05-01
+    title: "エンジニアリング100の言葉"
+    description: "Linuxの現場、ソフトウェア哲学、デバッグ、リーダーシップ、アーキテクチャ。"
+    image: https://kenimoto.dev/images/books/engineer-it-quotes.jpg
+    link: https://kenimoto.dev/ja/books/engineer-it-quotes/
+
+  - id: store-owner-ai-meo-llmo
+    date: 2026-06-03
+    title: "AIに選ばれる店をつくる"
+    description: "検索が「Googleで探す」から「AIに相談して店を決める」へ移るいま、店舗集客の主戦場も変わった。"
+    image: https://kenimoto.dev/images/books/store-owner-ai-meo-llmo.png
+    link: https://kenimoto.dev/ja/books/store-owner-ai-meo-llmo/
+
+  - id: local-llm-qwen-4070
+    date: 2026-07-03
+    title: "RTX 4070でQwen 35Bを2.8倍速くする"
+    subtitle: "ローカルLLM 高速化"
+    description: "12GBのRTX 4070でQwen3.5/3.6-35B-A3Bを34.6 tok/sで動かすまでの全工程を、著者が1枚のGPUで自ら測った数字だけで書いた実践書。"
+    image: https://kenimoto.dev/images/books/local-llm-qwen-4070.png
+    link: https://kenimoto.dev/ja/books/local-llm-qwen-4070/
