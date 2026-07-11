@@ -7,21 +7,24 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-let messageListener;
-let iframes = [];
+const state = { messageListener: undefined, iframes: [] };
 
 globalThis.window = {
   addEventListener(type, fn) {
-    if (type === "message") messageListener = fn;
+    if (type === "message") state.messageListener = fn;
   },
 };
 globalThis.document = {
   querySelectorAll() {
-    return iframes;
+    return state.iframes;
   },
 };
 
 await import("../embed.js");
+
+function messageListener(event) {
+  state.messageListener(event);
+}
 
 function makeIframe() {
   return { contentWindow: {}, style: { height: "" } };
@@ -37,18 +40,18 @@ function heightEvent(source, height, overrides = {}) {
 }
 
 test.beforeEach(() => {
-  iframes = [];
+  state.iframes = [];
   delete globalThis.window.HISTORYMAP_ALLOWED_ORIGINS;
 });
 
 test("registers a message listener on load", () => {
-  assert.equal(typeof messageListener, "function");
+  assert.equal(typeof state.messageListener, "function");
 });
 
 test("resizes only the iframe whose contentWindow matches event.source", () => {
   const a = makeIframe();
   const b = makeIframe();
-  iframes = [a, b];
+  state.iframes = [a, b];
 
   messageListener(heightEvent(b.contentWindow, 2860));
 
@@ -58,7 +61,7 @@ test("resizes only the iframe whose contentWindow matches event.source", () => {
 
 test("ignores messages without the historymap:height type", () => {
   const a = makeIframe();
-  iframes = [a];
+  state.iframes = [a];
 
   messageListener(heightEvent(a.contentWindow, 500, { data: { type: "other", height: 500 } }));
   messageListener(heightEvent(a.contentWindow, 500, { data: null }));
@@ -68,7 +71,7 @@ test("ignores messages without the historymap:height type", () => {
 
 test("ignores non-finite, non-numeric, and negative heights", () => {
   const a = makeIframe();
-  iframes = [a];
+  state.iframes = [a];
 
   for (const bad of [NaN, Infinity, -Infinity, -1, "500", null, undefined, {}]) {
     messageListener(heightEvent(a.contentWindow, bad));
@@ -79,7 +82,7 @@ test("ignores non-finite, non-numeric, and negative heights", () => {
 
 test("clamps heights above 100000 to 100000", () => {
   const a = makeIframe();
-  iframes = [a];
+  state.iframes = [a];
 
   messageListener(heightEvent(a.contentWindow, 100001));
 
@@ -88,7 +91,7 @@ test("clamps heights above 100000 to 100000", () => {
 
 test("accepts zero height", () => {
   const a = makeIframe();
-  iframes = [a];
+  state.iframes = [a];
 
   messageListener(heightEvent(a.contentWindow, 0));
 
@@ -97,7 +100,7 @@ test("accepts zero height", () => {
 
 test("blocks origins outside HISTORYMAP_ALLOWED_ORIGINS when set", () => {
   const a = makeIframe();
-  iframes = [a];
+  state.iframes = [a];
   globalThis.window.HISTORYMAP_ALLOWED_ORIGINS = ["https://trusted.example"];
 
   messageListener(heightEvent(a.contentWindow, 800, { origin: "https://evil.example" }));
@@ -109,7 +112,7 @@ test("blocks origins outside HISTORYMAP_ALLOWED_ORIGINS when set", () => {
 
 test("allows all origins when the allowlist is undefined or empty", () => {
   const a = makeIframe();
-  iframes = [a];
+  state.iframes = [a];
 
   messageListener(heightEvent(a.contentWindow, 300, { origin: "https://anywhere.example" }));
   assert.equal(a.style.height, "300px");
@@ -122,7 +125,7 @@ test("allows all origins when the allowlist is undefined or empty", () => {
 
 test("does nothing when no iframe matches event.source", () => {
   const a = makeIframe();
-  iframes = [a];
+  state.iframes = [a];
 
   messageListener(heightEvent({ someOther: "window" }, 700));
 
