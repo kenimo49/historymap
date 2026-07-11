@@ -205,9 +205,21 @@ historymap/
 │       └── zigzag.mjs     # zigzag layout renderer
 ├── test/
 │   └── build.test.mjs
+├── worker/
+│   └── index.js           # kenimoto.dev deployment glue (see note below)
 └── .github/workflows/
     └── deploy.yml          # build + deploy to GitHub Pages
 ```
+
+### About `worker/` (kenimoto.dev deployment only)
+
+`worker/` and the `main` / `assets.binding` entries in `wrangler.jsonc` are glue for
+the author's deployment at `kenimoto.dev/products/historymap/`: the Worker injects a
+site-wide support/analytics overlay script into served HTML. It is **host-gated** —
+injection only runs when the request hostname is exactly `kenimoto.dev`, so a fork
+deployed anywhere else serves plain static files with no injection and no external
+requests. If you fork this repo, deleting `worker/` (and those two `wrangler.jsonc`
+entries) is still recommended for clarity.
 
 ## Not in v1
 

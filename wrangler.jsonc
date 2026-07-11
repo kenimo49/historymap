@@ -5,8 +5,12 @@
   "observability": {
     "enabled": true
   },
+  // worker/ + main + binding are kenimoto.dev-deployment glue (host-gated overlay
+  // injection). Forks can delete these — see worker/index.js for details.
+  "main": "./worker/index.js",
   "assets": {
-    "directory": "./dist-worker"
+    "directory": "./dist-worker",
+    "binding": "ASSETS"
   },
   "compatibility_flags": [
     "nodejs_compat"
