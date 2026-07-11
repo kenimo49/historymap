@@ -31,6 +31,20 @@ export function validate(data) {
     throw new Error("data.yaml: top level must be a YAML mapping (object).");
   }
 
+  validateRootFields(data);
+  const layout = resolveLayout(data.layout);
+  validateTheme(data.theme);
+
+  if (!Array.isArray(data.items) || data.items.length === 0) {
+    throw new Error('data.yaml: "items" is required and must be a non-empty array with at least 1 item.');
+  }
+
+  data.items.forEach((item, index) => validateItem(item, index));
+
+  return { ...data, layout };
+}
+
+function validateRootFields(data) {
   if (typeof data.title !== "string" || data.title.trim() === "") {
     throw new Error('data.yaml: "title" is required and must be a non-empty string.');
   }
@@ -42,29 +56,16 @@ export function validate(data) {
   if (data.lang !== undefined && typeof data.lang !== "string") {
     throw new Error('data.yaml: "lang" must be a string.');
   }
+}
 
-  const layout = data.layout ?? "zigzag";
+function resolveLayout(rawLayout) {
+  const layout = rawLayout ?? "zigzag";
   if (!VALID_LAYOUTS.includes(layout)) {
     throw new Error(
       `data.yaml: "layout: ${layout}" is not supported in v1. Valid values: ${VALID_LAYOUTS.join(", ")}.`
     );
   }
-
-  if (
-    data.theme !== undefined &&
-    (typeof data.theme !== "object" || Array.isArray(data.theme) || data.theme === null)
-  ) {
-    throw new Error('data.yaml: "theme" must be a mapping (object).');
-  }
-  validateTheme(data.theme);
-
-  if (!Array.isArray(data.items) || data.items.length === 0) {
-    throw new Error('data.yaml: "items" is required and must be a non-empty array with at least 1 item.');
-  }
-
-  data.items.forEach((item, index) => validateItem(item, index));
-
-  return { ...data, layout };
+  return layout;
 }
 
 function validateItem(item, index) {
@@ -84,6 +85,10 @@ function validateItem(item, index) {
     throw new Error(`${label}: "title" is required and must be a non-empty string.`);
   }
 
+  validateItemOptionalFields(item, label);
+}
+
+function validateItemOptionalFields(item, label) {
   for (const field of STRING_ITEM_FIELDS) {
     if (item[field] !== undefined && typeof item[field] !== "string") {
       throw new Error(`${label}: "${field}" must be a string.`);
@@ -141,12 +146,21 @@ function validateLink(link, label) {
 function validateTheme(theme) {
   if (theme === undefined) return;
 
+  if (typeof theme !== "object" || Array.isArray(theme) || theme === null) {
+    throw new Error('data.yaml: "theme" must be a mapping (object).');
+  }
+
   if (theme.preset !== undefined && (typeof theme.preset !== "string" || !PRESETS[theme.preset])) {
     throw new Error(
       `data.yaml: "theme.preset" must be one of: ${Object.keys(PRESETS).join(", ")}. Got "${theme.preset}".`
     );
   }
 
+  validateThemeColors(theme);
+  validateThemeFont(theme);
+}
+
+function validateThemeColors(theme) {
   for (const field of THEME_COLOR_FIELDS) {
     const value = theme[field];
     if (value === undefined || value === "") continue;
@@ -156,7 +170,9 @@ function validateTheme(theme) {
       );
     }
   }
+}
 
+function validateThemeFont(theme) {
   if (theme.font !== undefined && theme.font !== "") {
     if (typeof theme.font !== "string" || !FONT_ALLOWLIST_RE.test(theme.font)) {
       throw new Error(
