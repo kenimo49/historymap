@@ -24,6 +24,8 @@ publishing history, generated from [`data.yaml`](data.yaml))*
   - **heatmap** — GitHub-contributions-style year × month activity grid with a per-year listing below
   - **snake** — serpentine curriculum-map track that U-turns at the end of each row
   - **road** — winding SVG road with a dashed centerline and numbered milestone pins
+- **[See the pattern gallery](docs/patterns/README.md)** — a screenshot of
+  every layout plus guidance on when to use which.
 - Try them: each layout has a fictional demo file under `demo/`
   (`demo/tree.yaml`, `demo/metro.yaml`, ...) you can copy as a starting point.
 - Output is a **single self-contained `dist/index.html`** file — CSS and JS
