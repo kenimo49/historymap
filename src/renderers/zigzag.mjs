@@ -27,11 +27,19 @@ function escapeHtml(value) {
 
 function renderImage(item) {
   if (!item.image) return "";
-  return `
-      <div class="item-image">
+  const circle = `
         <div class="item-image-circle">
           <img src="${escapeHtml(item.image)}" alt="${escapeHtml(item.title)}" loading="lazy" />
-        </div>
+        </div>`;
+  // Same destination as the text card; aria-hidden + tabindex=-1 keep it out of
+  // the tab order so keyboard users don't hit the same link twice.
+  const inner = item.link
+    ? `
+      <a class="item-image-link" href="${escapeHtml(item.link)}" target="_blank" rel="noopener" tabindex="-1" aria-hidden="true">${circle}
+      </a>`
+    : circle;
+  return `
+      <div class="item-image">${inner}
       </div>`;
 }
 
@@ -247,6 +255,14 @@ function buildStyle(theme) {
 
     .item-image {
       display: flex;
+    }
+
+    .item-image-link {
+      display: block;
+    }
+
+    .item-image-link:hover .item-image-circle {
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.16);
     }
 
     .item-image-circle {

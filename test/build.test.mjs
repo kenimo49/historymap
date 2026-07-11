@@ -209,3 +209,26 @@ items:
 
   assert.throws(() => buildSite({ dataPath, outDir: path.join(dir, "dist") }), /date/i);
 });
+
+test("item image is wrapped in a link when link is present", () => {
+  const dir = makeTmpDir();
+  const dataPath = writeYaml(dir, `
+title: "Test History"
+layout: zigzag
+items:
+  - date: 2020-06-15
+    title: "Linked Widget"
+    image: "https://example.com/cover.png"
+    link: "https://example.com/product"
+  - date: 2021-06-15
+    title: "Unlinked Widget"
+    image: "https://example.com/cover2.png"
+`);
+  const { html } = buildSite({ dataPath, outDir: path.join(dir, "dist") });
+
+  assert.match(html, /<a class="item-image-link" href="https:\/\/example\.com\/product"/);
+  // The unlinked item's image must not be wrapped in an image-link anchor.
+  const linkWraps = html.match(/item-image-link/g) || [];
+  assert.equal(linkWraps.filter((s) => s === "item-image-link").length >= 1, true);
+  assert.ok(!html.includes('<a class="item-image-link" href="https://example.com/cover2.png"'));
+});
