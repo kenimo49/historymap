@@ -44,10 +44,48 @@ function normalizeItems(items) {
     };
   });
 
+  assertUniqueIds(withSortKey);
+
   // Stable sort: ties (identical date) keep their original data.yaml order.
   withSortKey.sort((a, b) => a._sortDate.getTime() - b._sortDate.getTime());
 
   return withSortKey.map(({ _sortDate, ...rest }) => rest);
+}
+
+/**
+ * Ensures item ids are unique after normalization (explicit ids and
+ * auto-generated `item-N` ids alike). Anchors (`#id`) and any future
+ * `relations` feature depend on ids being unique, so a collision fails the
+ * build rather than silently rendering ambiguous anchors.
+ * @param {Array<{id: string}>} items
+ */
+function assertUniqueIds(items) {
+  const seen = new Map(); // id -> first index seen at
+  const duplicates = new Set();
+  items.forEach((item, index) => {
+    if (seen.has(item.id)) {
+      duplicates.add(item.id);
+    } else {
+      seen.set(item.id, index);
+    }
+  });
+
+  if (duplicates.size > 0) {
+    throw new Error(
+      `data.yaml: duplicate item id(s) after normalization: ${[...duplicates].join(", ")}. Each item's "id" (or auto-generated "item-N") must be unique.`
+    );
+  }
+}
+
+/**
+ * Returns true when `absPath` is equal to, or a descendant of, `baseDir`.
+ * Used to reject any local path (image src, or its copy destination) that
+ * escapes the directory it is supposed to be confined to.
+ * @param {string} absPath - already-resolved absolute path to check
+ * @param {string} baseDir - already-resolved absolute directory it must stay within
+ */
+function isWithinDir(absPath, baseDir) {
+  return absPath === baseDir || absPath.startsWith(baseDir + path.sep);
 }
 
 function resolveImage(item, { dataDir, outDir }) {
@@ -58,16 +96,39 @@ function resolveImage(item, { dataDir, outDir }) {
     return item;
   }
 
+  // Reject absolute paths (POSIX `/etc/passwd`-style) and Windows drive
+  // letters (`C:\...`) up front: local `image` values must be relative
+  // paths under the data file's directory, never an absolute filesystem path.
+  if (path.isAbsolute(src) || /^[A-Za-z]:/.test(src)) {
+    throw new Error(
+      `historymap: "image" for item "${item.title}" must be a URL or a path relative to the data file's directory; absolute paths are not allowed: "${src}"`
+    );
+  }
+
   // Local/relative path: copy the file into dist/ so the page keeps
   // working once deployed, and keep the same relative path as the src ref.
-  const absSrc = path.resolve(dataDir, src);
+  const dataDirResolved = path.resolve(dataDir);
+  const absSrc = path.resolve(dataDirResolved, src);
+  if (!isWithinDir(absSrc, dataDirResolved)) {
+    throw new Error(
+      `historymap: "image" for item "${item.title}" resolves outside of the data directory: "${src}" (resolved to ${absSrc})`
+    );
+  }
   if (!fs.existsSync(absSrc)) {
     throw new Error(
       `historymap: image not found for item "${item.title}": "${src}" (resolved to ${absSrc})`
     );
   }
+
   const relDest = src.replace(/^\/+/, "");
-  const absDest = path.join(outDir, relDest);
+  const outDirResolved = path.resolve(outDir);
+  const absDest = path.resolve(outDirResolved, relDest);
+  if (!isWithinDir(absDest, outDirResolved)) {
+    throw new Error(
+      `historymap: "image" for item "${item.title}" copy destination resolves outside of the output directory: "${src}"`
+    );
+  }
+
   fs.mkdirSync(path.dirname(absDest), { recursive: true });
   fs.copyFileSync(absSrc, absDest);
   return { ...item, image: relDest };

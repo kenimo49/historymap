@@ -210,6 +210,109 @@ items:
   assert.throws(() => buildSite({ dataPath, outDir: path.join(dir, "dist") }), /date/i);
 });
 
+test('link with a "javascript:" scheme fails with a clear error', () => {
+  const dir = makeTmpDir();
+  const dataPath = writeYaml(
+    dir,
+    `
+title: "Bad Link"
+items:
+  - date: 2020
+    title: "Something"
+    link: "javascript:alert(1)"
+`
+  );
+
+  assert.throws(() => buildSite({ dataPath, outDir: path.join(dir, "dist") }), /link/i);
+});
+
+test('link with a "mailto:" scheme is accepted', () => {
+  const dir = makeTmpDir();
+  const dataPath = writeYaml(
+    dir,
+    `
+title: "Mailto Link"
+items:
+  - date: 2020
+    title: "Something"
+    link: "mailto:a@b.c"
+`
+  );
+
+  const { html } = buildSite({ dataPath, outDir: path.join(dir, "dist") });
+  assert.match(html, /href="mailto:a@b\.c"/);
+});
+
+test("theme.font containing a style-closing tag fails with a clear error", () => {
+  const dir = makeTmpDir();
+  const dataPath = writeYaml(
+    dir,
+    `
+title: "Bad Font"
+theme:
+  font: "</style><script>alert(1)</script>"
+items:
+  - date: 2020
+    title: "Something"
+`
+  );
+
+  assert.throws(() => buildSite({ dataPath, outDir: path.join(dir, "dist") }), /font/i);
+});
+
+test("theme.accent that is not a hex color fails with a clear error", () => {
+  const dir = makeTmpDir();
+  const dataPath = writeYaml(
+    dir,
+    `
+title: "Bad Accent"
+theme:
+  accent: "red"
+items:
+  - date: 2020
+    title: "Something"
+`
+  );
+
+  assert.throws(() => buildSite({ dataPath, outDir: path.join(dir, "dist") }), /accent/i);
+});
+
+test("image path escaping the data directory fails with a clear error", () => {
+  const dir = makeTmpDir();
+  fs.writeFileSync(path.join(path.dirname(dir), "outside.png"), "fake-png-bytes");
+  const dataPath = writeYaml(
+    dir,
+    `
+title: "Escaping Image"
+items:
+  - date: 2020
+    title: "Something"
+    image: "../outside.png"
+`
+  );
+
+  assert.throws(() => buildSite({ dataPath, outDir: path.join(dir, "dist") }), /image/i);
+});
+
+test("duplicate item ids fail with a clear error", () => {
+  const dir = makeTmpDir();
+  const dataPath = writeYaml(
+    dir,
+    `
+title: "Duplicate Ids"
+items:
+  - id: dup
+    date: 2020
+    title: "First"
+  - id: dup
+    date: 2021
+    title: "Second"
+`
+  );
+
+  assert.throws(() => buildSite({ dataPath, outDir: path.join(dir, "dist") }), /duplicate/i);
+});
+
 test("item image is wrapped in a link when link is present", () => {
   const dir = makeTmpDir();
   const dataPath = writeYaml(dir, `
