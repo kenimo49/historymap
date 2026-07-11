@@ -15,6 +15,28 @@ const MONTH_LABELS = Array.from({ length: MONTH_COUNT }, (_, i) => String(i + 1)
 const UNKNOWN_LABEL = "—";
 const LEVEL_TITLES = ["0", "1", "2", "3", "4+"];
 
+// heatmap reserves `id="y-<year>"` for year-section anchors (see
+// renderYearSection) and `href="#y-<year>"` for grid-cell links (see
+// renderCell). If a user-supplied item id also matches this pattern, it
+// would collide with a year anchor's id in the DOM, so the build must fail
+// loudly rather than silently render two elements sharing one id.
+const YEAR_ANCHOR_ID_RE = /^y-\d+$/;
+
+/**
+ * Fails the build if any item's id collides with the reserved
+ * `y-<year>` anchor id pattern used for year sections/links in this layout.
+ * @param {Array<{id:string, title:string}>} items
+ */
+function assertNoYearAnchorIdCollision(items) {
+  for (const item of items) {
+    if (YEAR_ANCHOR_ID_RE.test(item.id)) {
+      throw new Error(
+        `historymap: heatmap layout reserves ids matching y-<year> for year anchors; rename item "${item.title}" (id "${item.id}").`
+      );
+    }
+  }
+}
+
 function levelForCount(count) {
   if (count <= 0) return 0;
   if (count >= 4) return 4;
@@ -407,6 +429,7 @@ function buildStyle(theme) {
 export function render(data, theme) {
   const lang = data.lang || "en";
   const description = data.description || "";
+  assertNoYearAnchorIdCollision(data.items);
   const rows = buildYearRows(data.items);
   const yearSectionsHtml = rows.map(renderYearSection).join("\n");
 

@@ -110,3 +110,25 @@ items:
     /circular/i
   );
 });
+
+test("relations.parent referencing the item's own id (self-reference) fails as a circular reference", () => {
+  const dir = makeTmpDir();
+  const dataPath = writeYaml(
+    dir,
+    `
+title: "Self-Referencing Tree"
+layout: tree
+items:
+  - id: self-item
+    date: 2020
+    title: "Self Item"
+    relations:
+      parent: self-item
+`
+  );
+
+  assert.throws(
+    () => buildSite({ dataPath, outDir: path.join(dir, "dist") }),
+    /circular/i
+  );
+});

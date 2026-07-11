@@ -50,9 +50,17 @@ function colorForLineIndex(index, theme) {
  * lane 0 — either the sole fallback line (no item anywhere has tags) or,
  * in a mixed dataset, the first named line — so every row always has a
  * station to render.
+ *
+ * Tags are deduped (order-preserving) before being mapped to lanes: a
+ * duplicate tag within the same item (e.g. `tags: ["A", "A"]`) names one
+ * line, not two, so it must render as a normal single-lane station rather
+ * than a false interchange. Duplicate tags are treated as harmless,
+ * intent-preserving input — this normalizes them silently rather than
+ * failing the build.
  */
 function laneIndicesFor(item, lineIndexByName) {
-  const tags = Array.isArray(item.tags) ? item.tags.filter((t) => lineIndexByName.has(t)) : [];
+  const rawTags = Array.isArray(item.tags) ? item.tags.filter((t) => lineIndexByName.has(t)) : [];
+  const tags = [...new Set(rawTags)];
   if (tags.length === 0) return [0];
   return tags.map((t) => lineIndexByName.get(t));
 }

@@ -31,6 +31,12 @@ function makeTmpDir() {
   return fs.mkdtempSync(path.join(os.tmpdir(), "historymap-heatmap-test-"));
 }
 
+function writeYaml(dir, contents, filename = "data.yaml") {
+  const filePath = path.join(dir, filename);
+  fs.writeFileSync(filePath, contents, "utf8");
+  return filePath;
+}
+
 function buildDemo() {
   const outDir = path.join(makeTmpDir(), "dist");
   return buildSite({ dataPath: DEMO_PATH, outDir });
@@ -110,4 +116,31 @@ test("a year with no items still gets a grid row", () => {
     assert.ok(cell, `expected a cell for 2022 col ${col}`);
     assert.match(cell, /data-count="0"/);
   }
+});
+
+test("an item id colliding with the y-<year> anchor pattern fails the build with a clear error", () => {
+  const dir = makeTmpDir();
+  const dataPath = writeYaml(
+    dir,
+    `
+title: "Anchor Collision"
+layout: heatmap
+items:
+  - id: y-2021
+    date: 2021-05-01
+    title: "Colliding Item"
+  - date: 2022
+    title: "Unrelated Item"
+`
+  );
+
+  assert.throws(
+    () => buildSite({ dataPath, outDir: path.join(dir, "dist") }),
+    (err) => {
+      assert.match(err.message, /y-<year>/);
+      assert.match(err.message, /Colliding Item/);
+      assert.match(err.message, /"y-2021"/);
+      return true;
+    }
+  );
 });

@@ -157,3 +157,28 @@ items:
   // Spans from lane 0 to lane 2 (width factor 2).
   assert.match(html, /var\(--metro-lane-width\) \* 2 \+ var\(--metro-interchange-size\)/);
 });
+
+test("an item with a duplicate tag (e.g. tags: [A, A]) renders as a normal single-lane station, not an interchange", () => {
+  const dir = makeTmpDir();
+  const dataPath = writeYaml(
+    dir,
+    `
+title: "Duplicate Tag"
+layout: metro
+items:
+  - date: 2020
+    title: "Solo Stop"
+    tags: ["A", "A"]
+`
+  );
+
+  const { html } = buildSite({ dataPath, outDir: path.join(dir, "dist") });
+
+  assert.match(html, /Solo Stop/);
+  // Check the actual markup class list, not just the substring
+  // "metro-station--interchange" — that string also appears as a CSS
+  // selector in the always-present <style> block (see the no-tags test
+  // above for the same caveat with .metro-legend-item).
+  assert.match(html, /class="metro-station metro-station--single"/);
+  assert.ok(!html.includes('class="metro-station metro-station--interchange"'));
+});
