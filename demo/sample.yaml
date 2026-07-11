@@ -1,0 +1,52 @@
+# Sample data.yaml for historymap.
+#
+# Everything below (company, product names, dates, images) is entirely
+# fictional and only meant to demonstrate the schema. Replace it with your
+# own product history, then push to main — GitHub Actions will build and
+# deploy dist/ to GitHub Pages automatically.
+
+title: "Virelia Systems Product History"
+description: "架空のサンプルデータです。Vireliaシリーズ製品の変遷を示すタイムラインの例です。"
+lang: ja
+layout: zigzag
+
+theme:
+  preset: navy-mono
+
+items:
+  - id: virelia-ct-100
+    date: 1998-04-01
+    title: "Virelia CT-100"
+    subtitle: "初代プログラマブルコントローラ"
+    description: "小規模生産ラインを想定した最初のシリーズ。リレー制御盤の置き換えを目的に開発された。"
+    link: "https://example.com/products/ct-100"
+
+  - id: virelia-ct-220
+    date: 2004-09-10
+    title: "Virelia CT-220"
+    subtitle: "通信機能強化モデル"
+    description: "産業用ネットワーク対応を追加し、複数ラインをまとめて監視できるようにした後継機。"
+    image: "https://placehold.co/400x560/0f2a43/ffffff?text=Sample+A"
+    link: "https://example.com/products/ct-220"
+
+  - id: virelia-mx-10
+    date: 2011
+    title: "Virelia MX-10"
+    subtitle: "モーションコントローラ"
+    description: "サーボ制御を統合し、精密な位置決めが必要な設備向けに設計されたシリーズ。"
+    link: "https://example.com/products/mx-10"
+
+  - id: virelia-mx-20
+    date: 2017-06-20
+    title: "Virelia MX-20"
+    subtitle: "省電力設計モデル"
+    description: "消費電力を旧モデル比で大きく削減し、筐体サイズも一回り小さくした改良版。"
+    image: "https://placehold.co/400x560/0f2a43/ffffff?text=Sample+B"
+    link: "https://example.com/products/mx-20"
+
+  - id: virelia-edgecore
+    date: 2026-02-14
+    title: "Virelia EdgeCore"
+    subtitle: "統合エッジコントローラ"
+    description: "エッジ側での推論処理とクラウド連携を統合した最新シリーズ。"
+    link: "https://example.com/products/edgecore"
