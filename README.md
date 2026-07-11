@@ -81,6 +81,23 @@ GitHub Pages demo supports `?layout=` out of the box; the plain `npm run
 build` (single layout, no subdirectories) is still available for local
 iteration.
 
+### Header layout switcher
+
+Every page written by `npm run build:all` (the root `index.html` and each
+`<layout>/index.html`) also gets a small `<select>` added to its header, so a
+visitor can jump straight to another layout without knowing about
+`?layout=`. It shows the current layout preselected; picking a different one
+navigates to that layout's own subpath (`./<layout>/` from the root,
+`../<layout>/` from inside a layout subdirectory), without carrying over the
+previous page's query string or hash.
+
+The switcher is skipped entirely when the page is loaded inside an
+`<iframe>` (e.g. an embed on someone else's site), so an embedded timeline
+never grows UI the embedding site didn't ask for. It only appears at all if
+the page has the `.hm-header` element every renderer emits. The plain `npm
+run build` (single layout, no subdirectories to switch between) never gets
+this script.
+
 ## Local development
 
 ```bash

@@ -5,7 +5,7 @@ import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { buildAllLayouts } from "../src/build.mjs";
+import { buildAllLayouts, buildSite } from "../src/build.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(__dirname, "..");
@@ -126,6 +126,75 @@ test("data with relations.parent (tree-specific field) builds every layout witho
     const layoutIndex = path.join(outDir, layout, "index.html");
     assert.ok(fs.existsSync(layoutIndex), `${layout}/index.html should exist for relations-bearing data`);
   }
+});
+
+test("the root page and every layout subdirectory page contain the layout-switcher UI marker", () => {
+  const dir = makeTmpDir();
+  const dataPath = writeYaml(dir, VALID_YAML);
+  const outDir = path.join(dir, "dist");
+
+  buildAllLayouts({ dataPath, outDir });
+
+  const rootHtml = fs.readFileSync(path.join(outDir, "index.html"), "utf8");
+  assert.match(rootHtml, /hm-layout-switcher/);
+
+  for (const layout of ALL_LAYOUTS) {
+    const layoutHtml = fs.readFileSync(path.join(outDir, layout, "index.html"), "utf8");
+    assert.match(layoutHtml, /hm-layout-switcher/, `${layout}/index.html should contain the layout-switcher UI marker`);
+  }
+});
+
+test("the layout-switcher UI script embeds the current page's own layout as CURRENT_LAYOUT", () => {
+  const dir = makeTmpDir();
+  const dataPath = writeYaml(dir, VALID_YAML);
+  const outDir = path.join(dir, "dist");
+
+  const { defaultLayout } = buildAllLayouts({ dataPath, outDir });
+  assert.equal(defaultLayout, "zigzag");
+
+  const rootHtml = fs.readFileSync(path.join(outDir, "index.html"), "utf8");
+  assert.match(rootHtml, /CURRENT_LAYOUT = "zigzag"/);
+
+  const treeHtml = fs.readFileSync(path.join(outDir, "tree", "index.html"), "utf8");
+  assert.match(treeHtml, /CURRENT_LAYOUT = "tree"/);
+
+  const metroHtml = fs.readFileSync(path.join(outDir, "metro", "index.html"), "utf8");
+  assert.match(metroHtml, /CURRENT_LAYOUT = "metro"/);
+});
+
+test("a single-layout buildSite() build does not get the layout-switcher UI script", () => {
+  const dir = makeTmpDir();
+  const dataPath = writeYaml(dir, VALID_YAML);
+  const outDir = path.join(dir, "dist");
+
+  buildSite({ dataPath, outDir });
+
+  const html = fs.readFileSync(path.join(outDir, "index.html"), "utf8");
+  assert.doesNotMatch(html, /hm-layout-switcher/);
+  assert.doesNotMatch(html, /ALLOWED_LAYOUTS/);
+});
+
+test("the layout-switcher UI script navigates using an allowlist element reference, never select.value directly", () => {
+  const dir = makeTmpDir();
+  const dataPath = writeYaml(dir, VALID_YAML);
+  const outDir = path.join(dir, "dist");
+
+  buildAllLayouts({ dataPath, outDir });
+
+  const rootHtml = fs.readFileSync(path.join(outDir, "index.html"), "utf8");
+  assert.match(rootHtml, /ALLOWED_LAYOUTS\[index\]/);
+  assert.doesNotMatch(rootHtml, /location\.href = prefix \+ select\.value/);
+});
+
+test("the layout-switcher UI script guards against running inside an embedding iframe", () => {
+  const dir = makeTmpDir();
+  const dataPath = writeYaml(dir, VALID_YAML);
+  const outDir = path.join(dir, "dist");
+
+  buildAllLayouts({ dataPath, outDir });
+
+  const rootHtml = fs.readFileSync(path.join(outDir, "index.html"), "utf8");
+  assert.match(rootHtml, /window\.self !== window\.top/);
 });
 
 test("local relative images are copied into every layout subdirectory independently", () => {

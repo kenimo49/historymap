@@ -237,6 +237,36 @@ tree は予約済み `relations.parent`、metro は予約済み `tags` を初め
 - `tags` の要素は文字列であることを validate.mjs で検証（metro 以外の layout でも一律）
 - `relations.parent` は存在する場合、文字列であることを validate.mjs で検証（参照整合と循環は tree レンダラー側）
 
+## ヘッダーレイアウトスイッチャーUI（2026-07-11 設計）
+
+`npm run build:all` で生成する **全ページ**（ルート `index.html` + 各 `<layout>/index.html`）のヘッダーに、レイアウトを切り替える `<select>` を注入する。単一ビルド（`npm run build`）にはサブディレクトリが存在しないため注入しない。
+
+### 挙動
+
+- `buildAllLayouts` が各ページ生成後、`injectBeforeHeadClose` で inline `<script>` を注入する（ルートは既存の `?layout=` リダイレクトstubの**後**に注入。stubが先に実行される順序を保つ）
+- スクリプトは `DOMContentLoaded` 後に動作:
+  1. `window.self !== window.top`（iframe埋め込み）なら**何もしない**。埋め込み先にスイッチャーは出さない
+  2. `document.querySelector(".hm-header")` を探し、無ければ何もしない（全レンダラーが `.hm-header` を持つ規約。防御的なフォールバック位置は作らない）
+  3. `<label class="hm-layout-switcher">Layout <select>…</select></label>` をヘッダー末尾に追加。option は allowlist の全レイアウト、現在ページのレイアウトを selected
+  4. `change` 時のナビゲーション先は **必ず `ALLOWED_LAYOUTS[index]` から取る**（`select.value` を直接パスに連結しない。リダイレクトstubと同じ規約）。ルートページは `./<layout>/`、サブディレクトリページは `../<layout>/`。query/hash は引き継がない（`?layout=` の再発火防止、hashアンカーはレイアウト固有のため）
+- 埋め込む定数（`ALLOWED_LAYOUTS` / `CURRENT_LAYOUT` / `IS_ROOT`）は build 時定数だが、既存規約どおり `JSON.stringify` 経由で埋め込む
+
+### 見た目（navy-mono準拠）
+
+- スクリプトが `<style>` も動的に追加（`.hm-header { position: relative }` + スイッチャー用スタイル）
+- ヘッダー右上に absolute 配置（`top/right: 16px` 目安）。ラベル文字は 12px・`var(--hm-text, #333)`、select は `1px solid var(--hm-line, #ccc)` 枠・`var(--hm-background, #fff)` 地・`border-radius: 4px`・小さめフォント
+- グラデーション・影・絵文字なし。フラットで細線
+- `@media (max-width: 640px)`: absolute をやめ static でヘッダーテキスト下に中央配置（タイトルとの重なり防止）
+- select に `aria-label` を付与
+
+### テスト（multibuild.test.mjs に追加）
+
+- build:all のルート+全サブディレクトリページに `hm-layout-switcher` マーカーが存在する
+- ルートの CURRENT_LAYOUT はデフォルトレイアウト、サブディレクトリは各自のレイアウト
+- 単一ビルド（buildSite 直呼び）の出力には注入されない
+- ナビゲーションが allowlist 要素参照であること（生成コードに `ALLOWED_LAYOUTS[` 参照がある）
+- iframe ガード（`window.top` 比較）が生成コードに含まれる
+
 ## 将来（v2でも実装しない）
 
 - 同一data.yamlからAstroコンポーネント等でのビルド時レンダリング（iframeなし自サイト統合）

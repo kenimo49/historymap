@@ -210,6 +210,13 @@ export function buildSite(options = {}) {
  * never by concatenating the raw query parameter into the path, so a
  * malicious `?layout=` value cannot be used to build an arbitrary path.
  *
+ * Every page written here (root plus each `<layout>/` subdirectory) also
+ * gets the layout-switcher UI script injected: a `<select>` in the header
+ * that lets a visitor jump straight to another layout. On the root page
+ * this is injected *after* the redirect stub above, so the stub still runs
+ * first. `buildSite` on its own (single-layout build, no subdirectories)
+ * never gets either script.
+ *
  * @param {object} [options]
  * @param {string} [options.dataPath] - path to the YAML data file (default: <repo>/data.yaml)
  * @param {string} [options.outDir] - output directory (default: <repo>/dist)
@@ -228,16 +235,28 @@ export function buildAllLayouts(options = {}) {
 
   // One subdirectory per registered layout, default included, so every
   // layout is reachable at a stable, direct path regardless of what the
-  // data file's own default is.
+  // data file's own default is. Each subdirectory page is not the root, so
+  // it only gets the layout-switcher UI script (no redirect stub: there is
+  // no `?layout=` handling to do once you're already at a specific layout).
   for (const layout of layouts) {
-    buildSite({ dataPath, outDir: path.join(outDir, layout), layoutOverride: layout });
+    const { outPath } = buildSite({ dataPath, outDir: path.join(outDir, layout), layoutOverride: layout });
+    const html = fs.readFileSync(outPath, "utf8");
+    const patched = injectBeforeHeadClose(
+      html,
+      buildLayoutSwitcherUiScript({ currentLayout: layout, layouts, isRoot: false })
+    );
+    fs.writeFileSync(outPath, patched, "utf8");
   }
 
   const rootOutPath = path.join(outDir, "index.html");
   const rootHtml = fs.readFileSync(rootOutPath, "utf8");
-  const patchedHtml = injectBeforeHeadClose(
+  const withRedirectStub = injectBeforeHeadClose(
     rootHtml,
     buildLayoutSwitcherScript({ defaultLayout, layouts })
+  );
+  const patchedHtml = injectBeforeHeadClose(
+    withRedirectStub,
+    buildLayoutSwitcherUiScript({ currentLayout: defaultLayout, layouts, isRoot: true })
   );
   fs.writeFileSync(rootOutPath, patchedHtml, "utf8");
 
@@ -273,6 +292,94 @@ function buildLayoutSwitcherScript({ defaultLayout, layouts }) {
     }
   } catch (e) {
     // Malformed URL/query string: fall through and keep showing the default layout.
+  }
+})();
+</script>
+`;
+}
+
+/**
+ * Builds the `<script>` block for the on-page layout-switcher `<select>`.
+ * Injected into the root page and every `<layout>/` subdirectory page by
+ * `buildAllLayouts` (never into a plain `buildSite` single-layout build,
+ * which has no subdirectories to switch between).
+ *
+ * Behavior, run once on `DOMContentLoaded` (or immediately if the document
+ * has already finished loading):
+ *  - inside an iframe (`window.self !== window.top`) it does nothing, so an
+ *    embedded page never grows a switcher the embedding site didn't ask for
+ *  - if the page has no `.hm-header` (every renderer emits one; this is a
+ *    defensive fallback, not a real code path) it does nothing
+ *  - otherwise it appends a `<style>` element (navy-mono: absolute
+ *    top-right on desktop, static + centered under 640px) and a `<label
+ *    class="hm-layout-switcher">` with a `<select>` listing every allowlisted
+ *    layout, current layout preselected
+ *  - on `change`, the navigation target is always read back out of
+ *    `ALLOWED_LAYOUTS` by `select.selectedIndex` (never `select.value`
+ *    concatenated into the path), mirroring the redirect stub's convention.
+ *    query string and hash are intentionally dropped: a carried-over
+ *    `?layout=` would just re-trigger the redirect stub, and hash anchors
+ *    are specific to the layout being left
+ *
+ * `currentLayout` and `layouts` are build-time values (never user input),
+ * but are still passed through JSON.stringify rather than interpolated as
+ * raw strings, matching this codebase's existing convention for embedding
+ * values into generated `<script>`/`<style>` blocks.
+ * @param {{ currentLayout: string, layouts: string[], isRoot: boolean }} params
+ * @returns {string}
+ */
+function buildLayoutSwitcherUiScript({ currentLayout, layouts, isRoot }) {
+  return `<script>
+(function () {
+  var ALLOWED_LAYOUTS = ${JSON.stringify(layouts)};
+  var CURRENT_LAYOUT = ${JSON.stringify(currentLayout)};
+  var IS_ROOT = ${JSON.stringify(isRoot)};
+
+  function init() {
+    // Never grow a switcher inside an embedding iframe.
+    if (window.self !== window.top) return;
+
+    var header = document.querySelector(".hm-header");
+    if (!header) return; // every renderer emits .hm-header; no fallback spot is worth guessing at
+
+    var style = document.createElement("style");
+    style.textContent =
+      ".hm-header { position: relative; }" +
+      ".hm-layout-switcher { position: absolute; top: 16px; right: 16px; font-size: 12px; color: var(--hm-text, #333); }" +
+      ".hm-layout-switcher select { margin-left: 4px; font-size: 12px; padding: 2px 4px; border: 1px solid var(--hm-line, #ccc); border-radius: 4px; background: var(--hm-background, #fff); color: var(--hm-text, #333); }" +
+      "@media (max-width: 640px) { .hm-layout-switcher { position: static; display: block; text-align: center; margin-top: 8px; } }";
+    document.head.appendChild(style);
+
+    var label = document.createElement("label");
+    label.className = "hm-layout-switcher";
+    label.appendChild(document.createTextNode("Layout "));
+
+    var select = document.createElement("select");
+    select.setAttribute("aria-label", "Layout");
+    for (var i = 0; i < ALLOWED_LAYOUTS.length; i++) {
+      var option = document.createElement("option");
+      option.value = ALLOWED_LAYOUTS[i];
+      option.textContent = ALLOWED_LAYOUTS[i];
+      if (ALLOWED_LAYOUTS[i] === CURRENT_LAYOUT) option.selected = true;
+      select.appendChild(option);
+    }
+    select.addEventListener("change", function () {
+      // Navigation target always comes from the allowlist entry itself,
+      // looked up by the select's index (never select.value concatenated
+      // directly into the path), same convention as the redirect stub above.
+      var index = select.selectedIndex;
+      var prefix = IS_ROOT ? "./" : "../";
+      location.href = prefix + ALLOWED_LAYOUTS[index] + "/";
+    });
+
+    label.appendChild(select);
+    header.appendChild(label);
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", init);
+  } else {
+    init();
   }
 })();
 </script>
