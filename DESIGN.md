@@ -253,8 +253,8 @@ tree は予約済み `relations.parent`、metro は予約済み `tags` を初め
 
 ### 見た目（navy-mono準拠）
 
-- スクリプトが `<style>` も動的に追加（`.hm-header { position: relative }` + スイッチャー用スタイル）
-- ヘッダー右上に absolute 配置（`top/right: 16px` 目安）。ラベル文字は 12px・`var(--hm-text, #333)`、select は `1px solid var(--hm-line, #ccc)` 枠・`var(--hm-background, #fff)` 地・`border-radius: 4px`・小さめフォント
+- スクリプトが `<style>` も動的に追加
+- **viewport 右上に fixed 配置**（`top/right: 16px`）。ヘッダー container 基準の absolute は不可 — レンダラーごとに container の max-width が異なる（720〜960px）ため、レイアウト切り替えのたびにセレクター位置が左右に跳ぶ（2026-07-11 kenさん指摘で fixed に変更）。ピル型（`var(--hm-background, #fff)` 地+`1px solid var(--hm-line, #ccc)` 枠+`border-radius: 4px`）、ラベル文字 12px・`var(--hm-text, #333)`、select は枠なし透過でピルに同化
 - グラデーション・影・絵文字なし。フラットで細線
 - `@media (max-width: 640px)`: absolute をやめ static でヘッダーテキスト下に中央配置（タイトルとの重なり防止）
 - select に `aria-label` を付与

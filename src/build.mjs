@@ -342,12 +342,16 @@ function buildLayoutSwitcherUiScript({ currentLayout, layouts, isRoot }) {
     var header = document.querySelector(".hm-header");
     if (!header) return; // every renderer emits .hm-header; no fallback spot is worth guessing at
 
+    // Fixed to the viewport (not the header): each renderer's header
+    // container has a different max-width (720-960px), so an absolute
+    // position inside it lands somewhere different on every layout and
+    // the select jumps around when switching. Viewport-fixed keeps it at
+    // the exact same spot on all layouts.
     var style = document.createElement("style");
     style.textContent =
-      ".hm-header { position: relative; }" +
-      ".hm-layout-switcher { position: absolute; top: 16px; right: 16px; font-size: 12px; color: var(--hm-text, #333); }" +
-      ".hm-layout-switcher select { margin-left: 4px; font-size: 12px; padding: 2px 4px; border: 1px solid var(--hm-line, #ccc); border-radius: 4px; background: var(--hm-background, #fff); color: var(--hm-text, #333); }" +
-      "@media (max-width: 640px) { .hm-layout-switcher { position: static; display: block; text-align: center; margin-top: 8px; } }";
+      ".hm-layout-switcher { position: fixed; top: 16px; right: 16px; z-index: 10; font-size: 12px; color: var(--hm-text, #333); background: var(--hm-background, #fff); border: 1px solid var(--hm-line, #ccc); border-radius: 4px; padding: 4px 8px; }" +
+      ".hm-layout-switcher select { margin-left: 4px; font-size: 12px; border: none; background: transparent; color: inherit; }" +
+      "@media (max-width: 640px) { .hm-layout-switcher { position: static; display: block; text-align: center; margin-top: 8px; background: transparent; border: none; padding: 0; } .hm-layout-switcher select { border: 1px solid var(--hm-line, #ccc); border-radius: 4px; background: var(--hm-background, #fff); padding: 2px 4px; } }";
     document.head.appendChild(style);
 
     var label = document.createElement("label");
