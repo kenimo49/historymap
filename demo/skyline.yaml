@@ -1,0 +1,73 @@
+# Demo data.yaml for the "skyline" layout (horizontal axis bar timeline).
+#
+# Everything below (company, product names, dates) is entirely fictional and
+# only meant to demonstrate the schema, in the same Virelia Systems universe
+# as demo/sample.yaml and demo/metro.yaml.
+
+title: "Virelia Systems スカイライン年表"
+description: "架空のサンプルデータです。中央の水平軸から交互に伸びる縦バーでVireliaシリーズの節目を並べています。"
+lang: ja
+layout: skyline
+
+theme:
+  preset: navy-mono
+
+items:
+  - id: virelia-ct-100
+    date: 1998-04-01
+    title: "Virelia CT-100"
+    subtitle: "初代プログラマブルコントローラ"
+    description: "リレー制御盤の置き換えを目的に開発された最初のシリーズ。"
+    link: "https://example.com/products/ct-100"
+
+  - id: virelia-ct-220
+    date: 2001-09-10
+    title: "Virelia CT-220"
+    subtitle: "通信機能強化モデル"
+    description: "産業用ネットワーク対応を追加した後継機。"
+
+  - id: virelia-mx-10
+    date: 2005-03-01
+    title: "Virelia MX-10"
+    subtitle: "モーションコントローラ"
+    description: "サーボ制御を統合した精密位置決め向けシリーズ。"
+    link: "https://example.com/products/mx-10"
+
+  - id: virelia-mx-20
+    date: 2009-06-20
+    title: "Virelia MX-20"
+    subtitle: "省電力設計モデル"
+    description: "消費電力を旧モデル比で大きく削減した改良版。"
+
+  - id: virelia-os-1
+    date: 2013-11-05
+    title: "Virelia OS 1.0"
+    subtitle: "統合管理ソフトウェア"
+    description: "複数コントローラを一元管理する初のソフトウェア製品。"
+    link: "https://example.com/products/os-1"
+
+  - id: virelia-rc-cloud
+    date: 2017-02-18
+    title: "Virelia RC-Cloud"
+    subtitle: "クラウド監視サービス"
+    description: "遠隔地からの稼働監視をクラウド経由で実現。"
+
+  - id: virelia-edgecore
+    date: 2021-02-14
+    title: "Virelia EdgeCore"
+    subtitle: "統合エッジコントローラ"
+    description: "エッジ側での推論処理とクラウド連携を統合した最新シリーズ。"
+    link: "https://example.com/products/edgecore"
+
+  - id: virelia-nexus
+    date: 2024-08-01
+    title: "Virelia Nexus"
+    subtitle: "次世代統合プラットフォーム"
+    description: "ハードウェアとソフトウェアを横断する全社統合基盤。"
+
+  - id: virelia-care-plus
+    date: 2026-05-30
+    title: "Virelia Care+"
+    subtitle: "予兆保全サブスクリプション"
+    description: "稼働データから故障を予兆検知する保守サービス。"
+    link: "https://example.com/products/care-plus"

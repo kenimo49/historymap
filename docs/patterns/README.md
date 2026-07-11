@@ -1,6 +1,6 @@
 # Layout pattern gallery
 
-historymap renders the same `data.yaml` schema into six different layouts,
+historymap renders the same `data.yaml` schema into ten different layouts,
 selected by the `layout:` field. This page shows what each one looks like and
 when to reach for it. Every screenshot below was generated from the fictional
 demo files under [`demo/`](../../demo/) — copy one as your starting point.
@@ -13,6 +13,10 @@ demo files under [`demo/`](../../demo/) — copy one as your starting point.
 | [`heatmap`](#heatmap) | Release cadence / activity density | — |
 | [`snake`](#snake) | Journey-style roadmaps, curricula | — |
 | [`road`](#road) | Milestone storytelling, pitch pages | — |
+| [`skyline`](#skyline) | Compact overviews, dense periods at a glance | — |
+| [`steps`](#steps) | Processes, onboarding flows, how-it-works pages | — |
+| [`beads`](#beads) | Stage-gate processes, production pipelines | — |
+| [`lollipop`](#lollipop) | Year-by-year overviews with a journey feel | — |
 
 ## zigzag
 
@@ -98,3 +102,60 @@ Best with roughly 4–8 items; each pin carries narrative weight.
 Data: `demo/road.yaml`
 
 ![road layout](road.png)
+
+## skyline
+
+A horizontal axis with vertical bars rising above and dipping below it,
+alternating, one color-cycled bar per item. Titles sit at the bar tips, year
+labels at the base. Scrolls horizontally when there are many items; flips to
+a vertical axis on mobile.
+
+**Use it when:** you want the whole history visible in one compact band —
+quick overviews, slide-style summaries, or dense stretches where card
+layouts would sprawl.
+
+Data: `demo/skyline.yaml`
+
+![skyline layout](skyline.png)
+
+## steps
+
+Large numbered circles (01, 02, …) connected by a guide line, each paired
+with a stadium-shaped pill card holding the date, title, and description.
+
+**Use it when:** the entries are a *process* rather than a history —
+onboarding sequences, deployment procedures, "how we work" pages, anything
+where the reader should follow numbered stages in order.
+
+Data: `demo/steps.yaml`
+
+![steps layout](steps.png)
+
+## beads
+
+A bold vertical axis with large ring nodes threaded on it like beads — the
+year sits inside each ring, and the first and last nodes are filled to mark
+start and finish. Content blocks alternate left and right on short
+connectors.
+
+**Use it when:** a linear pipeline with clear start and end matters —
+production processes, project phases, a product's journey from concept to
+launch.
+
+Data: `demo/beads.yaml`
+
+![beads layout](beads.png)
+
+## lollipop
+
+The winding road again, but with stemmed circular year badges instead of
+numbered pins — each badge carries its year (or image), color-cycled through
+the palette, with just a title and subtitle beside it.
+
+**Use it when:** you want road's journey feel but with year-at-a-glance
+scannability — annual milestone recaps where the years themselves are the
+headline. Prefer `road` when each milestone needs narrative text.
+
+Data: `demo/lollipop.yaml`
+
+![lollipop layout](lollipop.png)

@@ -1,0 +1,61 @@
+# Demo data.yaml for the "lollipop" (winding road + stemmed year badges)
+# renderer.
+#
+# Everything below (company, people, dates, figures) is entirely fictional,
+# meant only to demonstrate the layout with year-driven milestones. Replace
+# it with your own history and set layout: lollipop in your own data.yaml.
+
+title: "Virelia Systems 開発ロードマップ"
+description: "架空のVirelia Systemsが歩んだ年ごとの節目を、ロリポップ型の年バッジで示すサンプルです。"
+lang: ja
+layout: lollipop
+
+theme:
+  preset: navy-mono
+
+items:
+  - id: research-note
+    date: 2015-05-01
+    title: "研究ノート発足"
+    subtitle: "大学の研究室での小さな検証"
+    link: "https://example.com/virelia/history/research-note"
+
+  - id: prototype-alpha
+    date: 2017-02-14
+    title: "試作機 Alpha 完成"
+    subtitle: "社内デモのみの1号機"
+
+  - id: virelia-inc
+    date: 2018-08-20
+    title: "Virelia Systems 法人化"
+    subtitle: "3名でオフィスを借りる"
+    image: "https://placehold.co/300x300/2f6f6a/ffffff?text=2018"
+    link: "https://example.com/virelia/history/incorporation"
+
+  - id: series-a
+    date: 2020-03-09
+    title: "シリーズA調達"
+    subtitle: "量産設計チームを新設"
+
+  - id: overseas-partner
+    date: 2021-11-30
+    title: "海外代理店契約"
+    subtitle: "東南アジア3カ国に展開"
+    link: "https://example.com/virelia/history/overseas-partner"
+
+  - id: platform-v2
+    date: 2023-06-01
+    title: "プラットフォームv2刷新"
+    subtitle: "監視ダッシュボードを全面刷新"
+    image: "https://placehold.co/300x300/a4502e/ffffff?text=2023"
+
+  - id: milestone-500
+    date: 2025-01-17
+    title: "導入500拠点を突破"
+    subtitle: "国内外あわせての節目"
+    link: "https://example.com/virelia/history/milestone-500"
+
+  - id: aiops-launch
+    date: 2026-05-22
+    title: "AIOps機能を正式提供"
+    subtitle: "直近の最新マイルストーン"

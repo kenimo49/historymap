@@ -2,8 +2,8 @@
 
 Turn a YAML file into a company-style "product history" timeline — a static,
 self-contained HTML page you can host on GitHub Pages and embed anywhere via
-`<iframe>`. Six layouts from the same data file: `zigzag`, `tree`, `metro`,
-`heatmap`, `snake`, and `road`.
+`<iframe>`. Ten layouts from the same data file: `zigzag`, `tree`, `metro`,
+`heatmap`, `snake`, `road`, `skyline`, `steps`, `beads`, and `lollipop`.
 
 Visual reference: the zigzag layout follows a classic corporate product
 history timeline — a central vertical axis, items alternating left/right,
@@ -16,7 +16,7 @@ publishing history, generated from [`data.yaml`](data.yaml))*
 
 ## Scope
 
-- Six layouts selected by the `layout:` field, all rendered from the same
+- Ten layouts selected by the `layout:` field, all rendered from the same
   `data.yaml` schema (each renderer lives behind a plugin boundary):
   - **zigzag** — vertical timeline, central axis, items alternating left/right
   - **tree** — derivation genealogy driven by `relations.parent` (product family trees)
@@ -24,6 +24,10 @@ publishing history, generated from [`data.yaml`](data.yaml))*
   - **heatmap** — GitHub-contributions-style year × month activity grid with a per-year listing below
   - **snake** — serpentine curriculum-map track that U-turns at the end of each row
   - **road** — winding SVG road with a dashed centerline and numbered milestone pins
+  - **skyline** — horizontal axis with color-cycled bars rising and falling alternately
+  - **steps** — numbered circles + stadium-shaped pill cards, process-style
+  - **beads** — vertical axis with large year rings threaded on it like beads
+  - **lollipop** — winding road with stemmed circular year badges (road's sibling, overview-oriented)
 - **[See the pattern gallery](docs/patterns/README.md)** — a screenshot of
   every layout plus guidance on when to use which.
 - Try them: each layout has a fictional demo file under `demo/`
@@ -44,6 +48,39 @@ publishing history, generated from [`data.yaml`](data.yaml))*
 
 Your page will be live at `https://<your-user>.github.io/<your-repo>/`.
 
+## Layout switching via URL parameter
+
+`npm run build:all` builds **every** registered layout from the same
+`data.yaml` in one pass:
+
+```bash
+npm run build:all
+```
+
+- `dist/index.html` — the data file's own default layout (its `layout:`
+  field, or `zigzag` if unset)
+- `dist/<layout>/index.html` — every registered layout, one per
+  subdirectory (e.g. `dist/tree/index.html`, `dist/metro/index.html`, ...),
+  including the default
+
+`dist/index.html` also contains a small inline script that reads
+`?layout=<name>` from the page URL: if `<name>` matches one of the
+registered layouts and isn't the default, it redirects to `./<name>/`
+(query string and hash preserved). So `https://your-user.github.io/your-repo/?layout=metro`
+takes a visitor straight to the metro rendering of your data, while the
+plain URL keeps showing the default. Unrecognized `?layout=` values are
+ignored and the default layout is shown.
+
+If you want to embed one specific layout regardless of the data file's
+default, an `<iframe>` can point directly at the subpath instead of relying
+on the query parameter, e.g.
+`src="https://your-user.github.io/your-repo/tree/"`.
+
+`.github/workflows/deploy.yml` runs `npm run build:all`, so the deployed
+GitHub Pages demo supports `?layout=` out of the box; the plain `npm run
+build` (single layout, no subdirectories) is still available for local
+iteration.
+
 ## Local development
 
 ```bash
@@ -63,7 +100,7 @@ Open `dist/index.html` directly in a browser to preview.
 | `title` | yes | — | Page `<h1>` and `<title>` |
 | `description` | no | `""` | `<meta description>` and header subtitle |
 | `lang` | no | `en` | `<html lang>` |
-| `layout` | no | `zigzag` | One of `zigzag`, `tree`, `metro`, `heatmap`, `snake`, `road`; any other value fails the build |
+| `layout` | no | `zigzag` | One of `zigzag`, `tree`, `metro`, `heatmap`, `snake`, `road`, `skyline`, `steps`, `beads`, `lollipop`; any other value fails the build |
 | `theme.preset` | no | `navy-mono` | `navy-mono` or `plain` |
 | `theme.accent` | no | preset value | Accent color (year labels, links) |
 | `theme.background` | no | preset value | Page background color |

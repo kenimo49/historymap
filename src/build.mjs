@@ -14,6 +14,10 @@ import { render as renderMetro } from "./renderers/metro.mjs";
 import { render as renderHeatmap } from "./renderers/heatmap.mjs";
 import { render as renderSnake } from "./renderers/snake.mjs";
 import { render as renderRoad } from "./renderers/road.mjs";
+import { render as renderSkyline } from "./renderers/skyline.mjs";
+import { render as renderSteps } from "./renderers/steps.mjs";
+import { render as renderBeads } from "./renderers/beads.mjs";
+import { render as renderLollipop } from "./renderers/lollipop.mjs";
 
 // Renderer registry: one render(data, theme) function per layout value.
 const RENDERERS = {
@@ -23,6 +27,10 @@ const RENDERERS = {
   heatmap: renderHeatmap,
   snake: renderSnake,
   road: renderRoad,
+  skyline: renderSkyline,
+  steps: renderSteps,
+  beads: renderBeads,
+  lollipop: renderLollipop,
 };
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -151,6 +159,10 @@ function resolveImage(item, { dataDir, outDir }) {
  * @param {object} [options]
  * @param {string} [options.dataPath] - path to the YAML data file (default: <repo>/data.yaml)
  * @param {string} [options.outDir] - output directory (default: <repo>/dist)
+ * @param {string} [options.layoutOverride] - render with this layout instead of
+ *   the data file's own `layout:` value. Must be a key of RENDERERS; used
+ *   internally by buildAllLayouts to render every layout from one data file.
+ *   Not derived from user input, so it is trusted as-is (no re-validation).
  * @returns {{ html: string, outPath: string, data: object }}
  */
 export function buildSite(options = {}) {
@@ -161,14 +173,15 @@ export function buildSite(options = {}) {
   const raw = readYaml(dataPath);
   const data = validate(raw);
 
-  const renderer = RENDERERS[data.layout];
+  const layout = options.layoutOverride || data.layout;
+  const renderer = RENDERERS[layout];
   if (!renderer) {
-    throw new Error(`historymap: no renderer registered for layout "${data.layout}".`);
+    throw new Error(`historymap: no renderer registered for layout "${layout}".`);
   }
 
   const theme = resolveTheme(data.theme);
   const items = normalizeItems(data.items).map((item) => resolveImage(item, { dataDir, outDir }));
-  const renderData = { ...data, items };
+  const renderData = { ...data, layout, items };
 
   const html = renderer(renderData, theme);
 
@@ -179,14 +192,127 @@ export function buildSite(options = {}) {
   return { html, outPath, data: renderData };
 }
 
+/**
+ * Builds every registered layout from a single data file:
+ *  - the data file's own default layout (its `layout:` value, or `zigzag`
+ *    if unset) is written to `<outDir>/index.html`
+ *  - every registered layout (including the default) is additionally
+ *    written to `<outDir>/<layout>/index.html`, so any layout can be
+ *    reached directly (e.g. for an iframe pointed at a specific subpath)
+ *
+ * The root `<outDir>/index.html` also gets a small inline script injected
+ * before `</head>` that reads `?layout=<name>` from the page URL and, when
+ * `<name>` is present in the build-time allowlist of registered layouts and
+ * differs from the default, redirects to `./<name>/` (preserving the query
+ * string and hash). Any value not in the allowlist is silently ignored so
+ * the page still renders with the default layout. The redirect target is
+ * always taken from the allowlist array itself (matched by exact equality),
+ * never by concatenating the raw query parameter into the path, so a
+ * malicious `?layout=` value cannot be used to build an arbitrary path.
+ *
+ * @param {object} [options]
+ * @param {string} [options.dataPath] - path to the YAML data file (default: <repo>/data.yaml)
+ * @param {string} [options.outDir] - output directory (default: <repo>/dist)
+ * @returns {{ outDir: string, defaultLayout: string, layouts: string[] }}
+ */
+export function buildAllLayouts(options = {}) {
+  const dataPath = path.resolve(options.dataPath || path.join(REPO_ROOT, "data.yaml"));
+  const outDir = path.resolve(options.outDir || path.join(REPO_ROOT, "dist"));
+  const layouts = Object.keys(RENDERERS);
+
+  // Default build lands at <outDir>/index.html and tells us the data file's
+  // own resolved layout (validate() already defaults an unset layout to
+  // "zigzag", so data.layout here is always one of `layouts`).
+  const { data: defaultData } = buildSite({ dataPath, outDir });
+  const defaultLayout = defaultData.layout;
+
+  // One subdirectory per registered layout, default included, so every
+  // layout is reachable at a stable, direct path regardless of what the
+  // data file's own default is.
+  for (const layout of layouts) {
+    buildSite({ dataPath, outDir: path.join(outDir, layout), layoutOverride: layout });
+  }
+
+  const rootOutPath = path.join(outDir, "index.html");
+  const rootHtml = fs.readFileSync(rootOutPath, "utf8");
+  const patchedHtml = injectBeforeHeadClose(
+    rootHtml,
+    buildLayoutSwitcherScript({ defaultLayout, layouts })
+  );
+  fs.writeFileSync(rootOutPath, patchedHtml, "utf8");
+
+  return { outDir, defaultLayout, layouts };
+}
+
+/**
+ * Builds the `<script>` block that redirects `<outDir>/index.html` to
+ * `<outDir>/<layout>/index.html` based on a `?layout=` query parameter.
+ * `defaultLayout` and `layouts` are build-time values (never user input),
+ * but are still passed through JSON.stringify rather than interpolated as
+ * raw strings, matching this codebase's existing convention for embedding
+ * values into generated `<script>`/`<style>` blocks.
+ * @param {{ defaultLayout: string, layouts: string[] }} params
+ * @returns {string}
+ */
+function buildLayoutSwitcherScript({ defaultLayout, layouts }) {
+  return `<script>
+(function () {
+  var ALLOWED_LAYOUTS = ${JSON.stringify(layouts)};
+  var DEFAULT_LAYOUT = ${JSON.stringify(defaultLayout)};
+  try {
+    var params = new URLSearchParams(location.search);
+    var wanted = params.get("layout");
+    if (wanted) {
+      var index = ALLOWED_LAYOUTS.indexOf(wanted);
+      // Redirect target always comes from the allowlist entry itself
+      // (never the raw "wanted" value) so an unexpected query value can
+      // never be concatenated into the path.
+      if (index !== -1 && ALLOWED_LAYOUTS[index] !== DEFAULT_LAYOUT) {
+        location.replace("./" + ALLOWED_LAYOUTS[index] + "/" + location.search + location.hash);
+      }
+    }
+  } catch (e) {
+    // Malformed URL/query string: fall through and keep showing the default layout.
+  }
+})();
+</script>
+`;
+}
+
+/**
+ * Inserts `snippet` immediately before the first `</head>` in `html`.
+ * Every renderer's document shell has exactly one `</head>`, so the first
+ * match is the only match.
+ * @param {string} html
+ * @param {string} snippet
+ * @returns {string}
+ */
+function injectBeforeHeadClose(html, snippet) {
+  const marker = "</head>";
+  const index = html.indexOf(marker);
+  if (index === -1) {
+    throw new Error("historymap: could not find </head> in generated HTML to inject the layout-switcher script.");
+  }
+  return html.slice(0, index) + snippet + html.slice(index);
+}
+
 function isMainModule() {
   return process.argv[1] === fileURLToPath(import.meta.url);
 }
 
 if (isMainModule()) {
   try {
-    const { outPath } = buildSite();
-    console.log(`historymap: built ${outPath}`);
+    if (process.argv.includes("--all")) {
+      const { outDir, layouts } = buildAllLayouts();
+      console.log(
+        `historymap: built ${layouts.length} layouts into ${outDir} (root index.html + ${layouts
+          .map((layout) => `${layout}/`)
+          .join(", ")})`
+      );
+    } else {
+      const { outPath } = buildSite();
+      console.log(`historymap: built ${outPath}`);
+    }
   } catch (err) {
     console.error(err.message || err);
     process.exitCode = 1;

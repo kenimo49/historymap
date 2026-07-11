@@ -3,7 +3,7 @@
 
 import { PRESETS } from "./themes.mjs";
 
-const VALID_LAYOUTS = ["zigzag", "tree", "metro", "heatmap", "snake", "road"];
+const VALID_LAYOUTS = ["zigzag", "tree", "metro", "heatmap", "snake", "road", "skyline", "steps", "beads", "lollipop"];
 const STRING_ITEM_FIELDS = ["id", "subtitle", "description", "image", "link"];
 
 // Only these URL schemes are allowed for items[].link. Anything without a

@@ -1,0 +1,61 @@
+# Sample data.yaml for historymap's "steps" layout.
+#
+# Everything below (company, product names, dates, images) is entirely
+# fictional and only meant to demonstrate the schema. Replace it with your
+# own process/rollout timeline, then push to main — GitHub Actions will
+# build and deploy dist/ to GitHub Pages automatically.
+
+title: "Virelia Systems 導入プロセス"
+description: "架空のサンプルデータです。Virelia製品を工場に導入するまでの標準プロセスをステップ形式で示す例です。"
+lang: ja
+layout: steps
+
+theme:
+  preset: navy-mono
+
+items:
+  - id: kickoff
+    date: 2025-01-10
+    title: "要件ヒアリング"
+    subtitle: "キックオフミーティング"
+    description: "現場の課題とゴールを整理し、導入範囲と成功指標を確定する。"
+    link: "https://example.com/process/kickoff"
+
+  - id: assessment
+    date: 2025-01-24
+    title: "現行設備アセスメント"
+    subtitle: "既存ラインの調査"
+    description: "既存コントローラの型番・配線・稼働状況を記録し、置き換え可否を判定する。"
+
+  - id: design
+    date: 2025-02-14
+    title: "構成設計"
+    subtitle: "Virelia MX-20ベース"
+    description: "新しい制御盤の構成図と冗長化方針をまとめ、関係者レビューを行う。"
+    image: "https://placehold.co/300x300/0f2a43/ffffff?text=Design"
+
+  - id: procurement
+    date: 2025-03-05
+    title: "機材調達"
+    subtitle: "Virelia EdgeCore手配"
+    description: "必要台数を発注し、納期とリードタイムをサプライヤーと確認する。"
+
+  - id: installation
+    date: 2025-04-02
+    title: "設置・配線"
+    subtitle: "現地施工"
+    description: "既存盤を停止し、新しいコントローラへの配線切り替えを行う。"
+    image: "https://placehold.co/300x300/0f2a43/ffffff?text=Install"
+
+  - id: testing
+    date: 2025-04-20
+    title: "試運転・検証"
+    subtitle: "稼働テスト"
+    description: "全ラインを稼働させ、想定値との差異がないかを確認する。"
+
+  - id: handover
+    date: 2025-05-10
+    title: "引き渡し"
+    subtitle: "運用開始"
+    description: "操作マニュアルを共有し、現場担当者に正式に運用を引き継ぐ。"
+    link: "https://example.com/process/handover"

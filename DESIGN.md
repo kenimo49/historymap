@@ -195,6 +195,41 @@ tree は予約済み `relations.parent`、metro は予約済み `tags` を初め
 - モバイル: 縦直線道路 + 左寄せテキストに単純化
 - 路面色は `#3a3a3a` 固定ではなく text 色を基準に導出（テーマ変更に追従させる）
 
+### skyline — 水平軸バータイムライン（参考: スライド定番の中央軸+上下バー型）
+
+- 中央に水平軸（両端に矢印、text色ベース）。item は date 昇順に左→右へ等間隔配置
+- 各 item は軸から上下交互に伸びる縦バー（太さ8-10px）。バー色は metro と同じ8色パレットを出現順に循環（単調さ回避）
+- バー先端側に title（太字）+ subtitle（小）、バーの根元（軸沿い）に displayLabel
+- item が多い場合はコンテナを `overflow-x: auto` にして横スクロール（1item あたり最低幅を確保、ページ本体は横に溢れさせない）
+- モバイル（<640px）: 軸を縦にした縦組みへフォールバック（バーは左右交互の水平バー）
+- description は表示しない（バーラベルは簡潔さが命）
+
+### steps — 番号ステップリスト（参考: 番号円+スタジアム形ピルのプロセス型）
+
+- 大きな番号円（01, 02, …、白地+accent の太縁、2桁ゼロ埋め）を左に、スタジアム形ピル（`border-radius: 999px` の横長カード、薄い枠線）を右に重ねた行の縦リスト
+- ピル内: displayLabel（accent・太字）+ title（太字）+ subtitle（小）+ description（14px）
+- image がある item はピル右端に円形サムネ（白背景 contain）
+- 行間は番号円を貫く細い縦ガイド線で接続（最終行の下には出さない）
+- link があれば行全体をリンク化（target=_blank rel=noopener）
+- モバイル: 番号円を縮小しピルの padding を詰める。構造は同じ
+
+### beads — 垂直ビーズタイムライン（参考: 製造工程タイムライン型）
+
+- 中央に太めの垂直軸。軸上に大きなリングノード（白抜き円+accent の太縁、内側に displayLabel）を date 昇順に配置
+- 最初と最後のノードは塗りつぶし（accent地+白文字）にして START/FINISH 感を出す（ラベルは displayLabel のまま）
+- 各ノードから左右交互に短い水平コネクタ（細線+終端ドット）を伸ばし、その先に title（太字）+ subtitle + description のブロック。image があれば円形サムネをブロック側に添える
+- zigzag との違い: 年が軸上のリング内に入り軸が主役。コンテンツは各 item 片側のみ（左右交互）
+- モバイル: 軸を左端に寄せ全 item 右側配置（zigzag のモバイル戦略と同じ）
+
+### lollipop — ロリポップロード（参考: 道路+ステム付き年バッジ型、p1/p5統合）
+
+- road と同系の inline SVG 蛇行道路（太い路面+白破線センターライン。パス生成ロジックの考え方は road の仕様を参照）
+- マイルストーンは道路上のアンカー点から上下（モバイルでは左右）に細いステム（2px線）を伸ばし、先端に大きめの円形バッジ。バッジ内に displayLabel、バッジ色は metro の8色パレット循環（白文字が読めるよう濃色のみ使用）
+- image がある item は バッジ内を円形画像（白背景 contain）にし、displayLabel はバッジ直下に小さく出す
+- バッジの脇（ステムと反対側の余白）に title（太字）+ subtitle。description は表示しない
+- road との違い: road=番号ピン+テキストブロック重視（語り）、lollipop=年バッジが主役（一覧性）。使い分けは gallery README に明記
+- モバイル: 縦直線道路+左右交互バッジに単純化
+
 ### 共有インフラ（v2で導入）
 
 - `src/renderers/shared.mjs`: `escapeHtml` / `buildHeightScript` / `wrapDocument`（head+body枠+クレジット+高さ通知の共通シェル）。zigzag も移行済み

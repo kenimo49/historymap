@@ -1,0 +1,74 @@
+# Sample data.yaml for the `beads` (vertical bead timeline) layout.
+#
+# Everything below (company, product names, dates, images) is entirely
+# fictional and only meant to demonstrate the schema. Replace it with your
+# own product history, then push to main — GitHub Actions will build and
+# deploy dist/ to GitHub Pages automatically.
+
+title: "Virelia Systems — CT-500 製造工程タイムライン"
+description: "架空のサンプルデータです。Virelia SystemsのCT-500プロジェクトが構想からリリースまで辿った8つの工程を、垂直ビーズタイムライン形式で示す例です。"
+lang: ja
+layout: beads
+
+theme:
+  preset: navy-mono
+
+items:
+  - id: ct500-kickoff
+    date: 2025-01-10
+    title: "プロジェクト キックオフ"
+    subtitle: "要件定義フェーズ開始"
+    description: "既存CT-400シリーズの故障率データを基に、次世代機の要件を洗い出した起点。"
+    link: "https://example.com/products/ct-500/kickoff"
+
+  - id: ct500-design
+    date: 2025-03-02
+    title: "基本設計完了"
+    subtitle: "回路・筐体レイアウト確定"
+    description: "耐熱筐体と省配線コネクタを採用し、現場作業者の交換作業時間を短縮する設計とした。"
+    image: "https://placehold.co/300x300/0f2a43/ffffff?text=Design"
+    link: "https://example.com/products/ct-500/design"
+
+  - id: ct500-proto
+    date: 2025-05-18
+    title: "試作機組立"
+    subtitle: "社内評価用ロット5台"
+    description: "社内クリーンルームで初回組立を実施。振動試験・温度サイクル試験の対象とした。"
+    link: "https://example.com/products/ct-500/proto"
+
+  - id: ct500-fieldtest
+    date: 2025-07-22
+    title: "実地フィールド試験"
+    subtitle: "提携工場3拠点で稼働検証"
+    description: "実際の生産ラインに組み込み、3ヶ月間の連続稼働データを収集した。"
+    image: "https://placehold.co/300x300/0f2a43/ffffff?text=Field"
+    link: "https://example.com/products/ct-500/fieldtest"
+
+  - id: ct500-cert
+    date: 2025-09-30
+    title: "認証取得"
+    subtitle: "産業安全規格 適合確認"
+    description: "対象地域の産業機器安全規格への適合試験を完了し、量産に向けた最終関門を通過した。"
+    link: "https://example.com/products/ct-500/cert"
+
+  - id: ct500-massprod
+    date: 2025-11-14
+    title: "量産ライン立ち上げ"
+    subtitle: "月産2,000台体制"
+    description: "主力工場に専用ラインを新設し、量産開始に向けた歩留まり調整を実施した。"
+    link: "https://example.com/products/ct-500/massprod"
+
+  - id: ct500-launch
+    date: 2026-01-20
+    title: "Virelia CT-500 発売"
+    subtitle: "正式リリース"
+    description: "CT-400シリーズの正式後継機として全世界で販売開始。初回出荷分は3週間で完売した。"
+    image: "https://placehold.co/300x300/0f2a43/ffffff?text=Launch"
+    link: "https://example.com/products/ct-500/launch"
+
+  - id: ct500-review
+    date: 2026-04-05
+    title: "初回稼働レビュー"
+    subtitle: "リリース後3ヶ月点検"
+    description: "出荷済み機体の稼働ログを分析し、次期モデルへのフィードバック項目を確定した。"
+    link: "https://example.com/products/ct-500/review"
