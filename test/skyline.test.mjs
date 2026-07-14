@@ -57,12 +57,8 @@ test("demo/skyline.yaml builds HTML with all item titles, height marker, and sky
   assert.match(html, /class="skyline-bar"/);
   assert.match(html, /class="skyline-label"/);
 
-  // Description must NOT be rendered on the bars — skyline is deliberately
-  // terse (title/subtitle/displayLabel only).
-  assert.ok(
-    !html.includes("リレー制御盤の置き換えを目的に開発された最初のシリーズ。"),
-    "item description text should not appear in skyline output"
-  );
+  // Description is rendered when present (skyline-description class).
+  assert.match(html, /class="skyline-description"/);
 
   // Horizontal-scroll container so many items don't blow out the page.
   assert.match(html, /skyline-scroll/);

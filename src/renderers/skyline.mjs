@@ -68,11 +68,14 @@ function renderBar() {
  *   the bare displayLabel lives in the bottom half, right against the axis.
  * variant "down": the mirror image.
  */
-function renderItem(item, index) {
+function renderItem(item, index, prevDisplayLabel = null) {
   const variant = index % 2 === 0 ? "up" : "down";
   const color = colorForIndex(index);
   const contentHtml = renderContent(item);
-  const labelHtml = renderLabel(item);
+  const labelHtml =
+    item.displayLabel !== prevDisplayLabel
+      ? renderLabel(item)
+      : `\n        <span class="skyline-label skyline-label--dupe" aria-hidden="true"></span>`;
   const barHtml = renderBar();
 
   const topHalf =
@@ -246,6 +249,9 @@ function buildStyle(theme) {
     .skyline-content {
       max-width: 190px;
       padding: 6px 0;
+      line-break: strict;
+      word-break: keep-all;
+      overflow-wrap: break-word;
     }
 
     .skyline-link {
@@ -284,6 +290,10 @@ function buildStyle(theme) {
       color: var(--hm-accent);
       letter-spacing: 0.02em;
       padding: 6px 0;
+    }
+
+    .skyline-label--dupe {
+      visibility: hidden;
     }
 
     .hm-footer {
@@ -385,7 +395,11 @@ function buildStyle(theme) {
  */
 export function render(data, theme) {
   const description = data.description || "";
-  const itemsHtml = data.items.map((item, index) => renderItem(item, index)).join("\n");
+  const itemsHtml = data.items
+    .map((item, index, arr) =>
+      renderItem(item, index, index > 0 ? arr[index - 1].displayLabel : null)
+    )
+    .join("\n");
 
   const bodyHtml = `
 <div class="hm-page">

@@ -98,6 +98,105 @@ the page has the `.hm-header` element every renderer emits. The plain `npm
 run build` (single layout, no subdirectories to switch between) never gets
 this script.
 
+## CLI
+
+```bash
+# HTML output (default)
+node src/cli.mjs --data ./roadmap.yaml --layout skyline --out ./dist
+
+# PNG output (requires puppeteer — see below)
+node src/cli.mjs --data ./roadmap.yaml --layout skyline --format png --width 1400
+
+# All 10 layouts at once
+node src/cli.mjs --all --data ./roadmap.yaml --out ./dist
+
+# Help
+node src/cli.mjs --help
+```
+
+| Flag | Default | Description |
+|------|---------|-------------|
+| `--data <path>` | `<repo>/data.yaml` | Path to YAML data file |
+| `--out <dir>` | `<repo>/dist` | Output directory |
+| `--layout <name>` | from YAML | Override layout (zigzag, skyline, steps, …) |
+| `--format html\|png` | `html` | Output format |
+| `--width <px>` | `1400` | Viewport width for PNG (use 1400+ for Japanese) |
+| `--all` | off | Build all 10 layouts into subdirectories |
+
+Unknown flags exit with an error and print the help text.
+
+### PNG output & puppeteer
+
+PNG export uses [Puppeteer](https://pptr.dev/) to screenshot the generated HTML.
+Puppeteer is an `optionalDependency`, so a plain `npm install` skips it.
+Install it separately when you need PNG:
+
+```bash
+npm install puppeteer
+```
+
+If your CI uses `npm install --omit=optional`, install puppeteer explicitly:
+
+```bash
+npm install --omit=optional && npm install puppeteer
+```
+
+If Chrome is already on your system, skip the Puppeteer download and point to it:
+
+```bash
+PUPPETEER_EXECUTABLE_PATH=/usr/bin/google-chrome-stable \
+  node src/cli.mjs --format png --data ./roadmap.yaml
+```
+
+## MCP server
+
+historymap can run as an [MCP](https://modelcontextprotocol.io/) server so LLM
+agents (Claude Code, Claude Desktop, etc.) can generate timelines directly.
+
+**Tools exposed:**
+
+| Tool | Description |
+|------|-------------|
+| `generate_timeline` | Generate HTML or PNG from inline `yaml` or a file path `yamlPath` |
+| `list_layouts` | List all 10 layouts with "when to use" guidance |
+
+### Claude Code
+
+Add to your project's `.mcp.json` (or `~/.claude/settings.json`):
+
+```json
+{
+  "mcpServers": {
+    "historymap": {
+      "command": "node",
+      "args": ["/absolute/path/to/historymap/mcp/server.mjs"],
+      "env": {
+        "PUPPETEER_EXECUTABLE_PATH": "/usr/bin/google-chrome-stable"
+      }
+    }
+  }
+}
+```
+
+### Claude Desktop
+
+Add to `~/Library/Application Support/Claude/claude_desktop_config.json`
+(macOS) or `%APPDATA%\Claude\claude_desktop_config.json` (Windows):
+
+```json
+{
+  "mcpServers": {
+    "historymap": {
+      "command": "node",
+      "args": ["/absolute/path/to/historymap/mcp/server.mjs"]
+    }
+  }
+}
+```
+
+> **Note:** PNG output via MCP also requires puppeteer.
+> Run `npm install puppeteer` inside the historymap repo once before use.
+
 ## Local development
 
 ```bash
@@ -295,7 +394,7 @@ entries) is still recommended for clarity.
 ## Not implemented
 
 - Build-time rendering into Astro/React components (no-iframe integration)
-- Publishing as an npm CLI (`npx historymap build`)
+- Publishing as an npm package (`npx historymap` without cloning)
 
 See `DESIGN.md` for the full spec.
 
