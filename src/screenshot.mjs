@@ -45,6 +45,13 @@ export async function screenshotHtml(htmlPath, options = {}) {
       waitUntil: "domcontentloaded",
     });
     await page.waitForSelector(".hm-page", { timeout: 10_000 });
+    // Force scroll-fade animations to their final visible state so the
+    // screenshot is not blank when IntersectionObserver hasn't fired yet.
+    await page.evaluate(() => {
+      document.querySelectorAll(".item").forEach((el) =>
+        el.classList.add("visible")
+      );
+    });
     const scrollHeight = await page.evaluate(
       () => document.documentElement.scrollHeight
     );
