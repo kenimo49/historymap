@@ -315,7 +315,7 @@ items:
   assert.throws(() => buildSite({ dataPath, outDir: path.join(dir, "dist") }), /duplicate/i);
 });
 
-test("item image is wrapped in a link when link is present", () => {
+test("item card is wrapped in a link when link is present", () => {
   const dir = makeTmpDir();
   const dataPath = writeYaml(dir, `
 title: "Test History"
@@ -331,11 +331,10 @@ items:
 `);
   const { html } = buildSite({ dataPath, outDir: path.join(dir, "dist") });
 
-  assert.match(html, /<a class="item-image-link" href="https:\/\/example\.com\/product"/);
-  // The unlinked item's image must not be wrapped in an image-link anchor.
-  const linkWraps = html.match(/item-image-link/g) || [];
-  assert.equal(linkWraps.filter((s) => s === "item-image-link").length >= 1, true);
-  assert.ok(!html.includes('<a class="item-image-link" href="https://example.com/cover2.png"'));
+  // Linked item: the whole card is an <a> with item-link class.
+  assert.match(html, /<a class="item-card item-link" href="https:\/\/example\.com\/product"/);
+  // Unlinked item: card is a <div>, no anchor wrapping the image.
+  assert.ok(!html.includes('href="https://example.com/cover2.png"'));
 });
 
 after(() => {

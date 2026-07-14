@@ -1,32 +1,30 @@
-// zigzag renderer: a central vertical guide axis with items alternating
-// left/right, in the style of a corporate product-history timeline.
-// Returns a complete, self-contained HTML document string (no external
-// CDN dependencies; images may reference external URLs or local files
-// that build.mjs has already copied into dist/).
+// zigzag renderer: a central vertical guide axis with cards alternating
+// left/right. Cards include the book cover image, title, year badge, and
+// description. Year-divider markers appear on the axis when the year changes.
+// Returns a complete, self-contained HTML document string.
 
 import { escapeHtml, buildHeightScript } from "./shared.mjs";
 
 const CONNECTOR_WIDTH = 28;
+// Vertical distance from card top edge to the connector/dot on the centre axis.
+// Set to half the card-image height (200px ÷ 2) so the line meets the cover.
+const CONNECTOR_TOP = 100;
 
-function renderImage(item) {
+function extractYear(displayLabel) {
+  return String(displayLabel).split(/[.\-\/]/)[0];
+}
+
+function renderCardImage(item) {
   if (!item.image) return "";
-  const circle = `
-        <div class="item-image-circle">
-          <img src="${escapeHtml(item.image)}" alt="${escapeHtml(item.title)}" loading="lazy" />
-        </div>`;
-  // Same destination as the text card; aria-hidden + tabindex=-1 keep it out of
-  // the tab order so keyboard users don't hit the same link twice.
-  const inner = item.link
-    ? `
-      <a class="item-image-link" href="${escapeHtml(item.link)}" target="_blank" rel="noopener" tabindex="-1" aria-hidden="true">${circle}
-      </a>`
-    : circle;
   return `
-      <div class="item-image">${inner}
+      <div class="item-card-image">
+        <img src="${escapeHtml(item.image)}" alt="${escapeHtml(item.title)}" loading="lazy" />
       </div>`;
 }
 
-function renderContent(item) {
+function renderItem(item, index) {
+  const side = index % 2 === 0 ? "left" : "right";
+
   const subtitle = item.subtitle
     ? `<p class="item-subtitle">${escapeHtml(item.subtitle)}</p>`
     : "";
@@ -34,34 +32,57 @@ function renderContent(item) {
     ? `<p class="item-description">${escapeHtml(item.description)}</p>`
     : "";
 
-  const inner = `
-        <span class="item-year">${escapeHtml(item.displayLabel)}</span>
+  const cardBody = `
+      <div class="item-card-body">
         <h3 class="item-title">${escapeHtml(item.title)}</h3>
+        <span class="item-year">${escapeHtml(item.displayLabel)}</span>
         ${subtitle}
-        ${description}`;
-
-  if (item.link) {
-    return `
-      <div class="item-content">
-        <a class="item-link" href="${escapeHtml(item.link)}" target="_blank" rel="noopener">${inner}
-        </a>
+        ${description}
       </div>`;
-  }
+
+  const cardInner = `${renderCardImage(item)}${cardBody}`;
+
+  const card = item.link
+    ? `<a class="item-card item-link" href="${escapeHtml(item.link)}" target="_blank" rel="noopener">${cardInner}
+      </a>`
+    : `<div class="item-card">${cardInner}
+      </div>`;
 
   return `
-      <div class="item-content">${inner}
-      </div>`;
+    <li class="item item--${side}" id="${escapeHtml(item.id)}">${card}
+      <div class="item-spacer" aria-hidden="true"></div>
+    </li>`;
 }
 
-function renderItem(item, index) {
-  const side = index % 2 === 0 ? "left" : "right";
-  const contentHtml = renderContent(item);
-  const imageHtml = renderImage(item);
+function renderItems(items) {
+  const parts = [];
+  let lastYear = null;
+  items.forEach((item, index) => {
+    const year = extractYear(item.displayLabel);
+    if (year !== lastYear) {
+      parts.push(`
+    <li class="year-marker" role="presentation">
+      <span class="year-label">${escapeHtml(year)}</span>
+    </li>`);
+      lastYear = year;
+    }
+    parts.push(renderItem(item, index));
+  });
+  return parts.join("\n");
+}
 
+function buildObserverScript() {
   return `
-    <li class="item item--${side}" id="${escapeHtml(item.id)}">${contentHtml}
-      <div class="item-image-slot">${imageHtml}</div>
-    </li>`;
+(function(){
+  if(typeof IntersectionObserver==="undefined") {
+    document.querySelectorAll(".item").forEach(function(el){ el.classList.add("visible"); });
+    return;
+  }
+  var io=new IntersectionObserver(function(entries){
+    entries.forEach(function(e){ if(e.isIntersecting){ e.target.classList.add("visible"); io.unobserve(e.target); } });
+  },{threshold:0.08});
+  document.querySelectorAll(".item").forEach(function(el){ io.observe(el); });
+})();`;
 }
 
 function buildStyle(theme) {
@@ -72,6 +93,8 @@ function buildStyle(theme) {
       --hm-text: ${theme.text};
       --hm-line: ${theme.line};
       --hm-connector-width: ${CONNECTOR_WIDTH}px;
+      --hm-connector-top: ${CONNECTOR_TOP}px;
+      --hm-dot-size: 12px;
     }
 
     * {
@@ -133,21 +156,66 @@ function buildStyle(theme) {
       transform: translateX(-50%);
     }
 
+    /* ── Year divider ── */
+    .year-marker {
+      position: relative;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      list-style: none;
+      margin: 0 0 32px;
+      z-index: 1;
+    }
+
+    .year-label {
+      background: var(--hm-background);
+      border: 2px solid var(--hm-accent);
+      color: var(--hm-accent);
+      font-size: 13px;
+      font-weight: 700;
+      padding: 4px 18px;
+      border-radius: 20px;
+      letter-spacing: 0.06em;
+    }
+
+    /* ── Timeline item ── */
     .item {
       position: relative;
       display: flex;
       align-items: flex-start;
-      justify-content: center;
       gap: calc(var(--hm-connector-width) * 2);
-      margin: 0 0 64px;
+      margin: 0 0 56px;
+      opacity: 0;
+      transform: translateY(24px);
+      transition: opacity 0.5s ease, transform 0.5s ease;
+    }
+
+    .item.visible {
+      opacity: 1;
+      transform: translateY(0);
     }
 
     .item:last-child {
       margin-bottom: 0;
     }
 
-    .item-content,
-    .item-image-slot {
+    /* Centre-axis dot */
+    .item::after {
+      content: "";
+      position: absolute;
+      top: calc(var(--hm-connector-top) - var(--hm-dot-size) / 2);
+      left: 50%;
+      transform: translateX(-50%);
+      width: var(--hm-dot-size);
+      height: var(--hm-dot-size);
+      border-radius: 50%;
+      background: var(--hm-accent);
+      border: 2px solid var(--hm-background);
+      z-index: 2;
+    }
+
+    .item-card,
+    .item-spacer {
       flex: 1 1 0;
       max-width: calc(50% - var(--hm-connector-width));
     }
@@ -160,62 +228,86 @@ function buildStyle(theme) {
       flex-direction: row-reverse;
     }
 
-    .item-content {
+    /* ── Card ── */
+    .item-card {
+      display: block;
       position: relative;
-      padding: 2px 0;
-    }
-
-    .item-link {
+      background: var(--hm-background);
+      border: 1px solid var(--hm-line);
+      border-radius: 12px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+      overflow: hidden;
       color: inherit;
       text-decoration: none;
-      display: block;
+      transition: transform 0.22s ease, box-shadow 0.22s ease;
     }
 
-    .item-link:hover .item-title {
-      text-decoration: underline;
+    .item-link:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 28px rgba(0, 0, 0, 0.14);
     }
 
-    .item--left .item-content {
-      text-align: right;
-    }
-
-    .item--right .item-content {
-      text-align: left;
-    }
-
-    .item--left .item-content::before {
+    /* Connector line from card edge to centre axis */
+    .item--left .item-card::after,
+    .item--right .item-card::after {
       content: "";
       position: absolute;
-      top: 22px;
-      right: calc(-1 * var(--hm-connector-width));
+      top: var(--hm-connector-top);
       width: var(--hm-connector-width);
       height: 1px;
       background: var(--hm-line);
     }
 
-    .item--right .item-content::before {
-      content: "";
-      position: absolute;
-      top: 22px;
-      left: calc(-1 * var(--hm-connector-width));
-      width: var(--hm-connector-width);
-      height: 1px;
-      background: var(--hm-line);
+    .item--left .item-card::after {
+      right: calc(-1 * var(--hm-connector-width) - 1px);
     }
 
-    .item-year {
-      display: block;
-      font-size: 36px;
-      font-weight: 700;
-      color: var(--hm-accent);
-      line-height: 1.1;
-      margin-bottom: 6px;
+    .item--right .item-card::after {
+      left: calc(-1 * var(--hm-connector-width) - 1px);
+    }
+
+    /* ── Card image ── */
+    .item-card-image {
+      width: 100%;
+      height: 200px;
+      background: #f4f4f6;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      border-bottom: 1px solid var(--hm-line);
+    }
+
+    .item-card-image img {
+      max-width: 100%;
+      max-height: 160px;
+      width: auto;
+      height: auto;
+      object-fit: contain;
+      border-radius: 4px;
+      box-shadow: 0 3px 14px rgba(0, 0, 0, 0.18);
+    }
+
+    /* ── Card body ── */
+    .item-card-body {
+      padding: 16px 20px 20px;
     }
 
     .item-title {
-      font-size: 17px;
+      font-size: 16px;
       font-weight: 700;
-      margin: 0 0 4px;
+      margin: 0 0 6px;
+      line-height: 1.45;
+    }
+
+    .item-year {
+      display: inline-block;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--hm-accent);
+      opacity: 0.85;
+      margin-bottom: 8px;
+      letter-spacing: 0.04em;
     }
 
     .item-subtitle {
@@ -225,47 +317,10 @@ function buildStyle(theme) {
     }
 
     .item-description {
-      font-size: 14px;
-      line-height: 1.8;
+      font-size: 13px;
+      line-height: 1.75;
       margin: 0;
-      opacity: 0.9;
-    }
-
-    .item-image-slot {
-      display: flex;
-      justify-content: center;
-    }
-
-    .item-image {
-      display: flex;
-    }
-
-    .item-image-link {
-      display: block;
-    }
-
-    .item-image-link:hover .item-image-circle {
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.16);
-    }
-
-    .item-image-circle {
-      width: 150px;
-      height: 150px;
-      border-radius: 50%;
-      background: #ffffff;
-      border: 1px solid var(--hm-line);
-      box-shadow: 0 1px 6px rgba(0, 0, 0, 0.08);
-      overflow: hidden;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 12px;
-    }
-
-    .item-image-circle img {
-      width: 100%;
-      height: 100%;
-      object-fit: contain;
+      opacity: 0.85;
     }
 
     .hm-footer {
@@ -298,37 +353,43 @@ function buildStyle(theme) {
       .item--left,
       .item--right {
         flex-direction: column;
-        align-items: flex-start;
-        gap: 16px;
-        margin-bottom: 40px;
+        align-items: stretch;
+        gap: 0;
+        margin-bottom: 32px;
         padding-left: 48px;
       }
 
-      .item-content,
-      .item-image-slot {
+      .item::after {
+        left: 20px;
+        transform: translateX(-50%);
+      }
+
+      .item-card,
+      .item-spacer {
         max-width: 100%;
         width: 100%;
       }
 
-      .item--left .item-content,
-      .item--right .item-content {
-        text-align: left;
+      .item-spacer {
+        display: none;
       }
 
-      .item--left .item-content::before,
-      .item--right .item-content::before {
-        left: -28px;
-        right: auto;
-        top: 22px;
+      .item--left .item-card::after,
+      .item--right .item-card::after {
+        display: none;
       }
 
-      .item-image-slot {
+      .item-card-image {
+        height: 160px;
+      }
+
+      .item-card-image img {
+        max-height: 130px;
+      }
+
+      .year-marker {
         justify-content: flex-start;
-      }
-
-      .item-image-circle {
-        width: 100px;
-        height: 100px;
+        padding-left: 48px;
       }
     }`;
 }
@@ -336,14 +397,14 @@ function buildStyle(theme) {
 /**
  * Renders the zigzag timeline as a complete self-contained HTML document.
  * @param {{title:string, description?:string, lang?:string, items:Array}} data
- *   `data.items` must already be sorted and normalized (id, displayLabel set).
+ *   `data.items` must already be sorted and normalised (id, displayLabel set).
  * @param {object} theme - resolved theme, see src/themes.mjs `resolveTheme`.
  * @returns {string}
  */
 export function render(data, theme) {
   const lang = data.lang || "en";
   const description = data.description || "";
-  const itemsHtml = data.items.map((item, index) => renderItem(item, index)).join("\n");
+  const itemsHtml = renderItems(data.items);
 
   return `<!DOCTYPE html>
 <html lang="${escapeHtml(lang)}">
@@ -367,6 +428,7 @@ ${description ? `<meta name="description" content="${escapeHtml(description)}" /
   </footer>
 </div>
 <script>${buildHeightScript()}
+${buildObserverScript()}
 </script>
 </body>
 </html>
