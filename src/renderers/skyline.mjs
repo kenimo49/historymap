@@ -25,10 +25,11 @@ function colorForIndex(index) {
 }
 
 function renderContent(item) {
-  const subtitle = item.subtitle ? `<p class="skyline-subtitle">${escapeHtml(item.subtitle)}</p>` : "";
+  const subtitle     = item.subtitle     ? `<p class="skyline-subtitle">${escapeHtml(item.subtitle)}</p>`         : "";
+  const description  = item.description  ? `<p class="skyline-description">${escapeHtml(item.description)}</p>`  : "";
   const inner = `
           <h3 class="skyline-title">${escapeHtml(item.title)}</h3>
-          ${subtitle}`;
+          ${subtitle}${description}`;
 
   if (item.link) {
     return `
@@ -104,7 +105,7 @@ function buildStyle(theme) {
       --hm-background: ${theme.background};
       --hm-text: ${theme.text};
       --hm-line: ${theme.line};
-      --skyline-track-height: 360px;
+      --skyline-track-height: 420px;
       --skyline-item-width: 176px;
       --skyline-bar-thickness: 9px;
       --skyline-bar-length: 64px;
@@ -264,7 +265,14 @@ function buildStyle(theme) {
     .skyline-subtitle {
       font-size: 12px;
       opacity: 0.7;
+      margin: 0 0 3px;
+    }
+
+    .skyline-description {
+      font-size: 11px;
+      opacity: 0.6;
       margin: 0;
+      line-height: 1.5;
     }
 
     .skyline-label {
