@@ -6,9 +6,12 @@
 import { escapeHtml, buildHeightScript } from "./shared.mjs";
 
 const CONNECTOR_WIDTH = 28;
-// Vertical distance from card top edge to the connector/dot on the centre axis.
-// Set to half the card-image height (200px ÷ 2) so the line meets the cover.
-const CONNECTOR_TOP = 100;
+// Vertical distance from card top to the connector/dot on the centre axis.
+// = half of the card-image height (240px ÷ 2), so the line bisects the cover.
+const CONNECTOR_TOP = 120;
+const DOT_SIZE = 16;
+// Zigzag-specific axis line colour — slightly stronger than the navy-mono preset.
+const AXIS_LINE = "#C7CBD1";
 
 function extractYear(displayLabel) {
   return String(displayLabel).split(/[.\-\/]/)[0];
@@ -71,17 +74,44 @@ function renderItems(items) {
   return parts.join("\n");
 }
 
+function buildSummary(items) {
+  const years = items.map((i) => extractYear(i.displayLabel));
+  const minY = years[0];
+  const maxY = years[years.length - 1];
+  const yearRange = minY === maxY ? minY : `${minY} – ${maxY}`;
+  return { count: items.length, yearRange };
+}
+
 function buildObserverScript() {
   return `
 (function(){
-  if(typeof IntersectionObserver==="undefined") {
-    document.querySelectorAll(".item").forEach(function(el){ el.classList.add("visible"); });
+  // Equalize heights of paired cards so rows look uniform.
+  function eqHeights(){
+    var items=document.querySelectorAll(".item");
+    for(var i=0;i<items.length-1;i+=2){
+      var a=items[i].querySelector(".item-card");
+      var b=items[i+1]?items[i+1].querySelector(".item-card"):null;
+      if(!a||!b)continue;
+      a.style.minHeight="";b.style.minHeight="";
+      var h=Math.max(a.offsetHeight,b.offsetHeight);
+      a.style.minHeight=h+"px";b.style.minHeight=h+"px";
+    }
+  }
+  window.addEventListener("load",eqHeights);
+  window.addEventListener("resize",eqHeights);
+
+  // Scroll fade-in.
+  if(typeof IntersectionObserver==="undefined"){
+    document.querySelectorAll(".item").forEach(function(el){el.classList.add("visible");});
+    eqHeights();
     return;
   }
   var io=new IntersectionObserver(function(entries){
-    entries.forEach(function(e){ if(e.isIntersecting){ e.target.classList.add("visible"); io.unobserve(e.target); } });
+    entries.forEach(function(e){
+      if(e.isIntersecting){e.target.classList.add("visible");io.unobserve(e.target);}
+    });
   },{threshold:0.08});
-  document.querySelectorAll(".item").forEach(function(el){ io.observe(el); });
+  document.querySelectorAll(".item").forEach(function(el){io.observe(el);});
 })();`;
 }
 
@@ -91,10 +121,10 @@ function buildStyle(theme) {
       --hm-accent: ${theme.accent};
       --hm-background: ${theme.background};
       --hm-text: ${theme.text};
-      --hm-line: ${theme.line};
+      --hm-line: ${AXIS_LINE};
       --hm-connector-width: ${CONNECTOR_WIDTH}px;
       --hm-connector-top: ${CONNECTOR_TOP}px;
-      --hm-dot-size: 12px;
+      --hm-dot-size: ${DOT_SIZE}px;
     }
 
     * {
@@ -199,7 +229,7 @@ function buildStyle(theme) {
       margin-bottom: 0;
     }
 
-    /* Centre-axis dot */
+    /* Centre-axis dot — larger with outer ring for map-node feel */
     .item::after {
       content: "";
       position: absolute;
@@ -210,7 +240,8 @@ function buildStyle(theme) {
       height: var(--hm-dot-size);
       border-radius: 50%;
       background: var(--hm-accent);
-      border: 2px solid var(--hm-background);
+      border: 3px solid var(--hm-background);
+      box-shadow: 0 0 0 2px var(--hm-accent);
       z-index: 2;
     }
 
@@ -230,7 +261,8 @@ function buildStyle(theme) {
 
     /* ── Card ── */
     .item-card {
-      display: block;
+      display: flex;
+      flex-direction: column;
       position: relative;
       background: var(--hm-background);
       border: 1px solid var(--hm-line);
@@ -243,8 +275,8 @@ function buildStyle(theme) {
     }
 
     .item-link:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 8px 28px rgba(0, 0, 0, 0.14);
+      transform: translateY(-4px);
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.16);
     }
 
     /* Connector line from card edge to centre axis */
@@ -269,28 +301,38 @@ function buildStyle(theme) {
     /* ── Card image ── */
     .item-card-image {
       width: 100%;
-      height: 200px;
-      background: #f4f4f6;
+      height: 240px;
+      background: #f0f1f3;
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 20px;
+      padding: 10px 16px;
       border-bottom: 1px solid var(--hm-line);
+      flex-shrink: 0;
+      overflow: hidden;
     }
 
     .item-card-image img {
       max-width: 100%;
-      max-height: 160px;
+      max-height: 215px;
       width: auto;
       height: auto;
       object-fit: contain;
       border-radius: 4px;
-      box-shadow: 0 3px 14px rgba(0, 0, 0, 0.18);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+      transition: transform 0.3s ease;
+    }
+
+    .item-link:hover .item-card-image img {
+      transform: scale(1.04);
     }
 
     /* ── Card body ── */
     .item-card-body {
       padding: 16px 20px 20px;
+      display: flex;
+      flex-direction: column;
+      flex: 1;
     }
 
     .item-title {
@@ -321,21 +363,45 @@ function buildStyle(theme) {
       line-height: 1.75;
       margin: 0;
       opacity: 0.85;
+      display: -webkit-box;
+      -webkit-line-clamp: 4;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
     }
 
+    /* ── Footer ── */
     .hm-footer {
       text-align: center;
-      margin-top: 64px;
+      margin-top: 72px;
+      padding-top: 32px;
+      border-top: 1px solid var(--hm-line);
+    }
+
+    .hm-summary {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--hm-text);
+      margin: 0 0 4px;
+      letter-spacing: 0.02em;
+    }
+
+    .hm-year-range {
+      font-size: 12px;
+      color: var(--hm-text);
+      opacity: 0.55;
+      margin: 0 0 12px;
     }
 
     .hm-credit {
+      display: inline-block;
       font-size: 10px;
       color: var(--hm-text);
-      opacity: 0.45;
+      opacity: 0.4;
       text-decoration: none;
     }
 
     .hm-credit:hover {
+      opacity: 0.7;
       text-decoration: underline;
     }
 
@@ -380,11 +446,12 @@ function buildStyle(theme) {
       }
 
       .item-card-image {
-        height: 160px;
+        height: 180px;
+        padding: 8px 12px;
       }
 
       .item-card-image img {
-        max-height: 130px;
+        max-height: 160px;
       }
 
       .year-marker {
@@ -405,6 +472,7 @@ export function render(data, theme) {
   const lang = data.lang || "en";
   const description = data.description || "";
   const itemsHtml = renderItems(data.items);
+  const { count, yearRange } = buildSummary(data.items);
 
   return `<!DOCTYPE html>
 <html lang="${escapeHtml(lang)}">
@@ -424,6 +492,8 @@ ${description ? `<meta name="description" content="${escapeHtml(description)}" /
   <ol class="timeline">${itemsHtml}
   </ol>
   <footer class="hm-footer">
+    <p class="hm-summary">${escapeHtml(String(count))} items published</p>
+    <p class="hm-year-range">${escapeHtml(yearRange)}</p>
     <a class="hm-credit" href="https://github.com/kenimo49/historymap" target="_blank" rel="noopener">Generated with historymap</a>
   </footer>
 </div>
