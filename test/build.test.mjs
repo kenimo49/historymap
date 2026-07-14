@@ -1,4 +1,4 @@
-import { test } from "node:test";
+import { test, after } from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
@@ -6,8 +6,9 @@ import path from "node:path";
 
 import { buildSite } from "../src/build.mjs";
 
+const tmpDirs = [];
 function makeTmpDir() {
-  return fs.mkdtempSync(path.join(os.tmpdir(), "historymap-test-"));
+  const d = fs.mkdtempSync(path.join(os.tmpdir(), "historymap-test-")); tmpDirs.push(d); return d;
 }
 
 function writeYaml(dir, contents, filename = "data.yaml") {
@@ -334,4 +335,8 @@ items:
   const linkWraps = html.match(/item-image-link/g) || [];
   assert.equal(linkWraps.filter((s) => s === "item-image-link").length >= 1, true);
   assert.ok(!html.includes('<a class="item-image-link" href="https://example.com/cover2.png"'));
+});
+
+after(() => {
+  for (const dir of tmpDirs) fs.rmSync(dir, { recursive: true, force: true });
 });

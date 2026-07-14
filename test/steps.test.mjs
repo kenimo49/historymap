@@ -1,4 +1,4 @@
-import { test } from "node:test";
+import { test, after } from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
@@ -11,8 +11,9 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(__dirname, "..");
 const DEMO_PATH = path.join(REPO_ROOT, "demo", "steps.yaml");
 
+const tmpDirs = [];
 function makeTmpDir() {
-  return fs.mkdtempSync(path.join(os.tmpdir(), "historymap-steps-test-"));
+  const d = fs.mkdtempSync(path.join(os.tmpdir(), "historymap-steps-test-")); tmpDirs.push(d); return d;
 }
 
 function writeYaml(dir, contents, filename = "data.yaml") {
@@ -106,4 +107,8 @@ items:
   // The escaped form should be present instead, proving the string made it
   // through the renderer (not silently dropped) but safely encoded.
   assert.match(html, /&lt;script&gt;alert\(1\)&lt;\/script&gt;/);
+});
+
+after(() => {
+  for (const dir of tmpDirs) fs.rmSync(dir, { recursive: true, force: true });
 });

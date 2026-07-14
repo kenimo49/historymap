@@ -1,4 +1,4 @@
-import { test } from "node:test";
+import { test, after } from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
@@ -11,8 +11,9 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(__dirname, "..");
 const DEMO_SKYLINE_YAML = path.join(REPO_ROOT, "demo", "skyline.yaml");
 
+const tmpDirs = [];
 function makeTmpDir() {
-  return fs.mkdtempSync(path.join(os.tmpdir(), "historymap-skyline-test-"));
+  const d = fs.mkdtempSync(path.join(os.tmpdir(), "historymap-skyline-test-")); tmpDirs.push(d); return d;
 }
 
 function writeYaml(dir, contents, filename = "data.yaml") {
@@ -122,4 +123,8 @@ items:
   // The escaped form must be present instead.
   assert.match(html, /&lt;script&gt;alert\(1\)&lt;\/script&gt;/);
   assert.match(html, /&lt;img src=x onerror=alert\(2\)&gt;/);
+});
+
+after(() => {
+  for (const dir of tmpDirs) fs.rmSync(dir, { recursive: true, force: true });
 });

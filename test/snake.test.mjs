@@ -1,4 +1,4 @@
-import { test } from "node:test";
+import { test, after } from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
@@ -10,8 +10,9 @@ import { buildSite } from "../src/build.mjs";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const DEMO_PATH = path.join(__dirname, "..", "demo", "snake.yaml");
 
+const tmpDirs = [];
 function makeTmpDir() {
-  return fs.mkdtempSync(path.join(os.tmpdir(), "historymap-snake-test-"));
+  const d = fs.mkdtempSync(path.join(os.tmpdir(), "historymap-snake-test-")); tmpDirs.push(d); return d;
 }
 
 function writeYaml(dir, contents, filename = "data.yaml") {
@@ -175,4 +176,8 @@ items:
   const { html } = buildSite({ dataPath, outDir: path.join(dir, "dist") });
   assert.match(html, /class="snake-node snake-node--image"/);
   assert.match(html, /src="https:\/\/example\.com\/photo\.png"/);
+});
+
+after(() => {
+  for (const dir of tmpDirs) fs.rmSync(dir, { recursive: true, force: true });
 });

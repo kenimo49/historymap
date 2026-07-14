@@ -1,4 +1,4 @@
-import { test } from "node:test";
+import { test, after } from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
@@ -10,8 +10,9 @@ import { buildSite } from "../src/build.mjs";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const DEMO_PATH = path.join(__dirname, "..", "demo", "beads.yaml");
 
+const tmpDirs = [];
 function makeTmpDir() {
-  return fs.mkdtempSync(path.join(os.tmpdir(), "historymap-beads-test-"));
+  const d = fs.mkdtempSync(path.join(os.tmpdir(), "historymap-beads-test-")); tmpDirs.push(d); return d;
 }
 
 function writeYaml(dir, contents, filename = "data.yaml") {
@@ -190,4 +191,8 @@ items:
   assert.match(html, /&lt;\/style&gt;&lt;script&gt;alert\(3\)&lt;\/script&gt;/);
   assert.match(html, /&quot;quoted&quot;/);
   assert.match(html, /&amp; &lt;b&gt;bold&lt;\/b&gt;/);
+});
+
+after(() => {
+  for (const dir of tmpDirs) fs.rmSync(dir, { recursive: true, force: true });
 });

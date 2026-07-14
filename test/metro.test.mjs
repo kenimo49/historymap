@@ -1,4 +1,4 @@
-import { test } from "node:test";
+import { test, after } from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
@@ -11,8 +11,9 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(__dirname, "..");
 const DEMO_METRO_YAML = path.join(REPO_ROOT, "demo", "metro.yaml");
 
+const tmpDirs = [];
 function makeTmpDir() {
-  return fs.mkdtempSync(path.join(os.tmpdir(), "historymap-metro-test-"));
+  const d = fs.mkdtempSync(path.join(os.tmpdir(), "historymap-metro-test-")); tmpDirs.push(d); return d;
 }
 
 function writeYaml(dir, contents, filename = "data.yaml") {
@@ -181,4 +182,8 @@ items:
   // above for the same caveat with .metro-legend-item).
   assert.match(html, /class="metro-station metro-station--single"/);
   assert.ok(!html.includes('class="metro-station metro-station--interchange"'));
+});
+
+after(() => {
+  for (const dir of tmpDirs) fs.rmSync(dir, { recursive: true, force: true });
 });

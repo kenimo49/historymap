@@ -6,7 +6,7 @@
 // character allowlist blocks anything that could break out of the <style>
 // block in the first place (it is never escaped, just restricted).
 
-import { test } from "node:test";
+import { test, after } from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
@@ -36,8 +36,9 @@ const HOSTILE_CHILD_ID = `hostile-child-${XSS_PAYLOAD}-&-q-a`;
 // ampersands — those are rejected outright (see the dedicated test below).
 const QUOTED_FONT = `"Ken's Font", sans-serif`;
 
+const tmpDirs = [];
 function makeTmpDir() {
-  return fs.mkdtempSync(path.join(os.tmpdir(), "historymap-escaping-test-"));
+  const d = fs.mkdtempSync(path.join(os.tmpdir(), "historymap-escaping-test-")); tmpDirs.push(d); return d;
 }
 
 function writeYaml(dir, contents, filename = "data.yaml") {
@@ -163,4 +164,8 @@ items:
     () => buildSite({ dataPath, outDir: path.join(dir, "dist") }),
     /theme\.font/
   );
+});
+
+after(() => {
+  for (const dir of tmpDirs) fs.rmSync(dir, { recursive: true, force: true });
 });

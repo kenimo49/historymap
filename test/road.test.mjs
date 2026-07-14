@@ -1,4 +1,4 @@
-import { test } from "node:test";
+import { test, after } from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
@@ -11,8 +11,9 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(__dirname, "..");
 const DEMO_PATH = path.join(REPO_ROOT, "demo", "road.yaml");
 
+const tmpDirs = [];
 function makeTmpDir() {
-  return fs.mkdtempSync(path.join(os.tmpdir(), "historymap-road-test-"));
+  const d = fs.mkdtempSync(path.join(os.tmpdir(), "historymap-road-test-")); tmpDirs.push(d); return d;
 }
 
 function writeYaml(dir, contents, filename = "data.yaml") {
@@ -82,4 +83,8 @@ test("pin numbers 1..N appear in the rendered SVG", () => {
     const re = new RegExp(`<text class="road-pin-number"[^>]*>${i}</text>`);
     assert.match(html, re, `missing pin number ${i}`);
   }
+});
+
+after(() => {
+  for (const dir of tmpDirs) fs.rmSync(dir, { recursive: true, force: true });
 });

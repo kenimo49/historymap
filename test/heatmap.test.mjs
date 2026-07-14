@@ -1,4 +1,4 @@
-import { test } from "node:test";
+import { test, after } from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
@@ -27,8 +27,9 @@ const DEMO_TITLES = [
   "Virelia EdgeSync LTS",
 ];
 
+const tmpDirs = [];
 function makeTmpDir() {
-  return fs.mkdtempSync(path.join(os.tmpdir(), "historymap-heatmap-test-"));
+  const d = fs.mkdtempSync(path.join(os.tmpdir(), "historymap-heatmap-test-")); tmpDirs.push(d); return d;
 }
 
 function writeYaml(dir, contents, filename = "data.yaml") {
@@ -143,4 +144,8 @@ items:
       return true;
     }
   );
+});
+
+after(() => {
+  for (const dir of tmpDirs) fs.rmSync(dir, { recursive: true, force: true });
 });

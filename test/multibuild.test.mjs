@@ -1,4 +1,4 @@
-import { test } from "node:test";
+import { test, after } from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
@@ -24,8 +24,9 @@ const ALL_LAYOUTS = [
   "lollipop",
 ];
 
+const tmpDirs = [];
 function makeTmpDir() {
-  return fs.mkdtempSync(path.join(os.tmpdir(), "historymap-multibuild-test-"));
+  const d = fs.mkdtempSync(path.join(os.tmpdir(), "historymap-multibuild-test-")); tmpDirs.push(d); return d;
 }
 
 function writeYaml(dir, contents, filename = "data.yaml") {
@@ -221,4 +222,8 @@ items:
       `image should be copied into ${layout}/ as well`
     );
   }
+});
+
+after(() => {
+  for (const dir of tmpDirs) fs.rmSync(dir, { recursive: true, force: true });
 });
