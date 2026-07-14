@@ -11,10 +11,15 @@
     "test": "node --test \"test/**/*.test.mjs\"",
     "deploy": "wrangler deploy",
     "preview": "wrangler dev",
-    "deploy:cf": "npm run build:all && rm -rf dist-worker && mkdir -p dist-worker/products/historymap && cp -r dist/. dist-worker/products/historymap/ && cp dist/index.html dist-worker/index.html && wrangler deploy"
+    "deploy:cf": "npm run build:all && rm -rf dist-worker && mkdir -p dist-worker/products/historymap && cp -r dist/. dist-worker/products/historymap/ && cp dist/index.html dist-worker/index.html && wrangler deploy",
+    "mcp": "node mcp/server.mjs"
   },
   "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0",
     "js-yaml": "^4.1.0"
+  },
+  "optionalDependencies": {
+    "puppeteer": "^23.0.0"
   },
   "engines": {
     "node": ">=20"
