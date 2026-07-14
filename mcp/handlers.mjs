@@ -23,7 +23,9 @@ export async function handleGenerateTimeline({ yaml, layout, format = "png", wid
     throw new Error('generate_timeline: "yaml" must be a non-empty string.');
   }
 
-  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "historymap-"));
+  const base = path.join(os.tmpdir(), "historymap");
+  fs.mkdirSync(base, { recursive: true });
+  const tmpDir = fs.mkdtempSync(path.join(base, "gen-"));
   try {
     const yamlPath = path.join(tmpDir, "data.yaml");
     fs.writeFileSync(yamlPath, yaml, "utf8");

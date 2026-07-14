@@ -8,7 +8,7 @@ import { buildSite } from "../src/build.mjs";
 
 const tmpDirs = [];
 function makeTmpDir() {
-  const d = fs.mkdtempSync(path.join(os.tmpdir(), "historymap-test-")); tmpDirs.push(d); return d;
+  const _base = path.join(os.tmpdir(), "historymap"); fs.mkdirSync(_base, { recursive: true }); const d = fs.mkdtempSync(path.join(_base, "test-")); tmpDirs.push(d); return d;
 }
 
 function writeYaml(dir, contents, filename = "data.yaml") {
@@ -279,8 +279,9 @@ items:
 });
 
 test("image path escaping the data directory fails with a clear error", () => {
-  const dir = makeTmpDir();
-  fs.writeFileSync(path.join(path.dirname(dir), "outside.png"), "fake-png-bytes");
+  const wrapperDir = makeTmpDir();
+  const dir = fs.mkdtempSync(path.join(wrapperDir, "inner-"));
+  fs.writeFileSync(path.join(wrapperDir, "outside.png"), "fake-png-bytes");
   const dataPath = writeYaml(
     dir,
     `

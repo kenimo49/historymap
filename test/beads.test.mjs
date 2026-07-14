@@ -12,7 +12,7 @@ const DEMO_PATH = path.join(__dirname, "..", "demo", "beads.yaml");
 
 const tmpDirs = [];
 function makeTmpDir() {
-  const d = fs.mkdtempSync(path.join(os.tmpdir(), "historymap-beads-test-")); tmpDirs.push(d); return d;
+  const _base = path.join(os.tmpdir(), "historymap"); fs.mkdirSync(_base, { recursive: true }); const d = fs.mkdtempSync(path.join(_base, "test-")); tmpDirs.push(d); return d;
 }
 
 function writeYaml(dir, contents, filename = "data.yaml") {

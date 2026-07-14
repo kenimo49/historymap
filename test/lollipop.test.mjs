@@ -13,7 +13,7 @@ const DEMO_PATH = path.join(REPO_ROOT, "demo", "lollipop.yaml");
 
 const tmpDirs = [];
 function makeTmpDir() {
-  const d = fs.mkdtempSync(path.join(os.tmpdir(), "historymap-lollipop-test-")); tmpDirs.push(d); return d;
+  const _base = path.join(os.tmpdir(), "historymap"); fs.mkdirSync(_base, { recursive: true }); const d = fs.mkdtempSync(path.join(_base, "test-")); tmpDirs.push(d); return d;
 }
 
 function writeYaml(dir, contents, filename = "data.yaml") {
