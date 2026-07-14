@@ -5,9 +5,12 @@
   "type": "module",
   "private": true,
   "license": "MIT",
+  "bin": {
+    "historymap": "./src/cli.mjs"
+  },
   "scripts": {
-    "build": "node src/build.mjs",
-    "build:all": "node src/build.mjs --all",
+    "build": "node src/cli.mjs",
+    "build:all": "node src/cli.mjs --all",
     "test": "node --test \"test/**/*.test.mjs\"",
     "deploy": "wrangler deploy",
     "preview": "wrangler dev",

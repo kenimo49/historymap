@@ -407,25 +407,3 @@ function injectBeforeHeadClose(html, snippet) {
   return html.slice(0, index) + snippet + html.slice(index);
 }
 
-function isMainModule() {
-  return process.argv[1] === fileURLToPath(import.meta.url);
-}
-
-if (isMainModule()) {
-  try {
-    if (process.argv.includes("--all")) {
-      const { outDir, layouts } = buildAllLayouts();
-      console.log(
-        `historymap: built ${layouts.length} layouts into ${outDir} (root index.html + ${layouts
-          .map((layout) => `${layout}/`)
-          .join(", ")})`
-      );
-    } else {
-      const { outPath } = buildSite();
-      console.log(`historymap: built ${outPath}`);
-    }
-  } catch (err) {
-    console.error(err.message || err);
-    process.exitCode = 1;
-  }
-}

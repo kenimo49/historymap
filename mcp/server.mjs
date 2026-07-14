@@ -7,7 +7,7 @@ import {
 } from "@modelcontextprotocol/sdk/types.js";
 
 import { VALID_LAYOUTS } from "../src/validate.mjs";
-import { handleListLayouts, handleGenerateTimeline } from "./handlers.mjs";
+import { LAYOUT_DESCRIPTIONS, handleListLayouts, handleGenerateTimeline } from "./handlers.mjs";
 
 const server = new Server(
   { name: "historymap", version: "1.0.0" },
@@ -20,39 +20,47 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
       name: "generate_timeline",
       description:
         "Generate a timeline or roadmap visualization from YAML data. " +
-        "Returns the result as an HTML string (format=html) or a PNG image (format=png). " +
-        "PNG output requires puppeteer to be installed (`npm install puppeteer`).",
+        "Pass yaml (inline string) or yamlPath (path to a .yaml file). " +
+        "Returns HTML (format=html) or a PNG image (format=png). " +
+        "PNG requires puppeteer: run `npm install puppeteer` once before use.",
       inputSchema: {
         type: "object",
         properties: {
           yaml: {
             type: "string",
             description:
-              "YAML content in historymap data.yaml format (title, items[], optional layout/theme).",
+              "Inline YAML content (historymap format). Mutually exclusive with yamlPath.",
+          },
+          yamlPath: {
+            type: "string",
+            description:
+              "Absolute path to a .yaml file on disk. Use this for iterative editing workflows to avoid passing large strings. Mutually exclusive with yaml.",
           },
           layout: {
             type: "string",
             enum: VALID_LAYOUTS,
-            description: `Layout style. One of: ${VALID_LAYOUTS.join(", ")}. Defaults to the value set in the YAML, or "zigzag".`,
+            description:
+              `Layout style (overrides the layout field in YAML). One of: ${VALID_LAYOUTS.join(", ")}. ` +
+              `Descriptions: ${VALID_LAYOUTS.map((l) => `${l} — ${LAYOUT_DESCRIPTIONS[l]}`).join("; ")}.`,
           },
           format: {
             type: "string",
             enum: ["html", "png"],
             description:
-              'Output format. "html" returns the generated HTML; "png" returns a screenshot image. Default: "png".',
+              'Output format. "html" returns the generated HTML string; "png" returns a screenshot. Default: "png".',
           },
           width: {
             type: "number",
             description:
-              "Viewport width in pixels for PNG output (default: 1200).",
+              "Viewport width in pixels for PNG output (default: 1400). Use 1400+ for Japanese text to avoid narrow line wrapping.",
           },
         },
-        required: ["yaml"],
       },
     },
     {
       name: "list_layouts",
-      description: "List all available timeline layout styles.",
+      description:
+        "List all 10 available timeline layout styles with a short description of when to use each.",
       inputSchema: {
         type: "object",
         properties: {},
