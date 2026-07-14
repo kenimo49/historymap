@@ -198,14 +198,15 @@ function buildStyle(theme) {
     }
 
     .year-label {
-      background: var(--hm-background);
-      border: 2px solid var(--hm-accent);
+      background: #eef0f2;
+      border: 3px solid var(--hm-accent);
       color: var(--hm-accent);
-      font-size: 13px;
+      font-size: 14px;
       font-weight: 700;
-      padding: 4px 18px;
+      padding: 5px 20px;
       border-radius: 20px;
       letter-spacing: 0.06em;
+      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.12);
     }
 
     /* ── Timeline item ── */
@@ -248,7 +249,7 @@ function buildStyle(theme) {
     .item-card,
     .item-spacer {
       flex: 1 1 0;
-      max-width: calc(50% - var(--hm-connector-width));
+      max-width: calc(50% - var(--hm-connector-width) - 24px);
     }
 
     .item--left {
@@ -320,11 +321,13 @@ function buildStyle(theme) {
       object-fit: contain;
       border-radius: 4px;
       box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
-      transition: transform 0.3s ease;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      cursor: pointer;
     }
 
     .item-link:hover .item-card-image img {
-      transform: scale(1.04);
+      transform: scale(1.06);
+      box-shadow: 0 10px 28px rgba(0, 0, 0, 0.3);
     }
 
     /* ── Card body ── */
@@ -373,35 +376,44 @@ function buildStyle(theme) {
     .hm-footer {
       text-align: center;
       margin-top: 72px;
-      padding-top: 32px;
-      border-top: 1px solid var(--hm-line);
+      padding-top: 36px;
+      border-top: 2px solid var(--hm-line);
     }
 
     .hm-summary {
-      font-size: 14px;
-      font-weight: 600;
+      font-size: 22px;
+      font-weight: 700;
       color: var(--hm-text);
       margin: 0 0 4px;
-      letter-spacing: 0.02em;
+      letter-spacing: 0.01em;
     }
 
     .hm-year-range {
-      font-size: 12px;
+      font-size: 13px;
       color: var(--hm-text);
-      opacity: 0.55;
-      margin: 0 0 12px;
+      opacity: 0.5;
+      margin: 0 0 20px;
+      letter-spacing: 0.04em;
+    }
+
+    .hm-tagline {
+      font-size: 13px;
+      color: var(--hm-text);
+      opacity: 0.45;
+      font-style: italic;
+      margin: 0 0 16px;
     }
 
     .hm-credit {
       display: inline-block;
       font-size: 10px;
       color: var(--hm-text);
-      opacity: 0.4;
+      opacity: 0.35;
       text-decoration: none;
     }
 
     .hm-credit:hover {
-      opacity: 0.7;
+      opacity: 0.65;
       text-decoration: underline;
     }
 
@@ -492,8 +504,9 @@ ${description ? `<meta name="description" content="${escapeHtml(description)}" /
   <ol class="timeline">${itemsHtml}
   </ol>
   <footer class="hm-footer">
-    <p class="hm-summary">${escapeHtml(String(count))} items published</p>
+    <p class="hm-summary">${escapeHtml(String(count))} items</p>
     <p class="hm-year-range">${escapeHtml(yearRange)}</p>
+    <p class="hm-tagline">The journey continues...</p>
     <a class="hm-credit" href="https://github.com/kenimo49/historymap" target="_blank" rel="noopener">Generated with historymap</a>
   </footer>
 </div>
