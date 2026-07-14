@@ -105,7 +105,7 @@ function buildStyle(theme) {
       --hm-background: ${theme.background};
       --hm-text: ${theme.text};
       --hm-line: ${theme.line};
-      --skyline-track-height: 420px;
+      --skyline-track-height: 360px;
       --skyline-item-width: 176px;
       --skyline-bar-thickness: 9px;
       --skyline-bar-length: 64px;
@@ -162,6 +162,7 @@ function buildStyle(theme) {
     .skyline-track {
       position: relative;
       height: var(--skyline-track-height);
+      overflow: visible;
     }
 
     .skyline-axis {
@@ -224,6 +225,7 @@ function buildStyle(theme) {
       flex-direction: column;
       align-items: center;
       text-align: center;
+      overflow: visible;
     }
 
     .skyline-half--top {
