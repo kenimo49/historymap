@@ -15,15 +15,28 @@ export async function screenshotHtml(htmlPath, options = {}) {
     puppeteer = (await import("puppeteer")).default;
   } catch {
     throw new Error(
-      "puppeteer is not installed. To enable PNG export, run: npm install puppeteer"
+      "PNG export requires puppeteer, but it is not installed.\n" +
+      "  Install:  npm install puppeteer\n" +
+      "  If you used --omit=optional or --no-optional, re-run without those flags.\n" +
+      "  Or set PUPPETEER_EXECUTABLE_PATH to point to an existing Chrome binary."
     );
   }
 
   const width = options.width ?? 1200;
-  const browser = await puppeteer.launch({
-    executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || undefined,
-    args: ["--no-sandbox", "--disable-setuid-sandbox"],
-  });
+  let browser;
+  try {
+    browser = await puppeteer.launch({
+      executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || undefined,
+      args: ["--no-sandbox", "--disable-setuid-sandbox"],
+    });
+  } catch (err) {
+    throw new Error(
+      `Chrome could not be launched: ${err.message}\n` +
+      "To fix, choose one of:\n" +
+      "  1. Download the bundled browser:  npx puppeteer browsers install chrome\n" +
+      "  2. Point to an existing binary:   PUPPETEER_EXECUTABLE_PATH=/usr/bin/google-chrome-stable"
+    );
+  }
 
   try {
     const page = await browser.newPage();
