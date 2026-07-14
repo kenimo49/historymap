@@ -47,10 +47,17 @@ export async function screenshotHtml(htmlPath, options = {}) {
     await page.waitForSelector(".hm-page", { timeout: 10_000 });
     // Force scroll-fade animations to their final visible state so the
     // screenshot is not blank when IntersectionObserver hasn't fired yet.
+    // Also disable lazy-loading so off-screen images are fetched immediately.
     await page.evaluate(() => {
       document.querySelectorAll(".item").forEach((el) =>
         el.classList.add("visible")
       );
+      document.querySelectorAll("img[loading='lazy']").forEach((img) => {
+        img.loading = "eager";
+        const src = img.src;
+        img.src = "";
+        img.src = src;
+      });
     });
     const scrollHeight = await page.evaluate(
       () => document.documentElement.scrollHeight
