@@ -48,69 +48,11 @@ publishing history, generated from [`data.yaml`](data.yaml))*
 
 Your page will be live at `https://<your-user>.github.io/<your-repo>/`.
 
-## Layout switching via URL parameter
-
-`npm run build:all` builds **every** registered layout from the same
-`data.yaml` in one pass:
-
-```bash
-npm run build:all
-```
-
-- `dist/index.html` — the data file's own default layout (its `layout:`
-  field, or `zigzag` if unset)
-- `dist/<layout>/index.html` — every registered layout, one per
-  subdirectory (e.g. `dist/tree/index.html`, `dist/metro/index.html`, ...),
-  including the default
-
-`dist/index.html` also contains a small inline script that reads
-`?layout=<name>` from the page URL: if `<name>` matches one of the
-registered layouts and isn't the default, it redirects to `./<name>/`
-(query string and hash preserved). So `https://your-user.github.io/your-repo/?layout=metro`
-takes a visitor straight to the metro rendering of your data, while the
-plain URL keeps showing the default. Unrecognized `?layout=` values are
-ignored and the default layout is shown.
-
-If you want to embed one specific layout regardless of the data file's
-default, an `<iframe>` can point directly at the subpath instead of relying
-on the query parameter, e.g.
-`src="https://your-user.github.io/your-repo/tree/"`.
-
-`.github/workflows/deploy.yml` runs `npm run build:all`, so the deployed
-GitHub Pages demo supports `?layout=` out of the box; the plain `npm run
-build` (single layout, no subdirectories) is still available for local
-iteration.
-
-### Header layout switcher
-
-Every page written by `npm run build:all` (the root `index.html` and each
-`<layout>/index.html`) also gets a small `<select>` added to its header, so a
-visitor can jump straight to another layout without knowing about
-`?layout=`. It shows the current layout preselected; picking a different one
-navigates to that layout's own subpath (`./<layout>/` from the root,
-`../<layout>/` from inside a layout subdirectory), without carrying over the
-previous page's query string or hash.
-
-The switcher is skipped entirely when the page is loaded inside an
-`<iframe>` (e.g. an embed on someone else's site), so an embedded timeline
-never grows UI the embedding site didn't ask for. It only appears at all if
-the page has the `.hm-header` element every renderer emits. The plain `npm
-run build` (single layout, no subdirectories to switch between) never gets
-this script.
-
 ## CLI
 
 ```bash
-# HTML output (default)
-node src/cli.mjs --data ./roadmap.yaml --layout skyline --out ./dist
-
-# PNG output (requires puppeteer — see below)
 node src/cli.mjs --data ./roadmap.yaml --layout skyline --format png --width 1400
-
-# All 10 layouts at once
-node src/cli.mjs --all --data ./roadmap.yaml --out ./dist
-
-# Help
+node src/cli.mjs --all --data ./roadmap.yaml   # all 10 layouts
 node src/cli.mjs --help
 ```
 
@@ -118,70 +60,24 @@ node src/cli.mjs --help
 |------|---------|-------------|
 | `--data <path>` | `<repo>/data.yaml` | Path to YAML data file |
 | `--out <dir>` | `<repo>/dist` | Output directory |
-| `--layout <name>` | from YAML | Override layout (zigzag, skyline, steps, …) |
+| `--layout <name>` | from YAML | Override layout |
 | `--format html\|png` | `html` | Output format |
-| `--width <px>` | `1400` | Viewport width for PNG (use 1400+ for Japanese) |
-| `--all` | off | Build all 10 layouts into subdirectories |
+| `--width <px>` | `1400` | Viewport width for PNG |
+| `--all` | off | Build all 10 layouts |
 
-Unknown flags exit with an error and print the help text.
-
-### PNG output & puppeteer
-
-PNG export uses [Puppeteer](https://pptr.dev/) to screenshot the generated HTML.
-Puppeteer is an `optionalDependency`, so a plain `npm install` skips it.
-Install it separately when you need PNG:
-
-```bash
-npm install puppeteer
-```
-
-If your CI uses `npm install --omit=optional`, install puppeteer explicitly:
-
-```bash
-npm install --omit=optional && npm install puppeteer
-```
-
-If Chrome is already on your system, skip the Puppeteer download and point to it:
-
-```bash
-PUPPETEER_EXECUTABLE_PATH=/usr/bin/google-chrome-stable \
-  node src/cli.mjs --format png --data ./roadmap.yaml
-```
+PNG output uses [Puppeteer](https://pptr.dev/) (`optionalDependency` — install
+separately with `npm install puppeteer`).
+**→ [Full CLI reference & puppeteer setup](docs/cli.md)**
 
 ## MCP server
 
 historymap can run as an [MCP](https://modelcontextprotocol.io/) server so LLM
 agents (Claude Code, Claude Desktop, etc.) can generate timelines directly.
 
-**Tools exposed:**
-
 | Tool | Description |
 |------|-------------|
 | `generate_timeline` | Generate HTML or PNG from inline `yaml` or a file path `yamlPath` |
 | `list_layouts` | List all 10 layouts with "when to use" guidance |
-
-### Claude Code
-
-Add to your project's `.mcp.json` (or `~/.claude/settings.json`):
-
-```json
-{
-  "mcpServers": {
-    "historymap": {
-      "command": "node",
-      "args": ["/absolute/path/to/historymap/mcp/server.mjs"],
-      "env": {
-        "PUPPETEER_EXECUTABLE_PATH": "/usr/bin/google-chrome-stable"
-      }
-    }
-  }
-}
-```
-
-### Claude Desktop
-
-Add to `~/Library/Application Support/Claude/claude_desktop_config.json`
-(macOS) or `%APPDATA%\Claude\claude_desktop_config.json` (Windows):
 
 ```json
 {
@@ -194,8 +90,15 @@ Add to `~/Library/Application Support/Claude/claude_desktop_config.json`
 }
 ```
 
-> **Note:** PNG output via MCP also requires puppeteer.
-> Run `npm install puppeteer` inside the historymap repo once before use.
+**→ [Full MCP setup (Claude Code + Claude Desktop)](docs/mcp.md)**
+
+## Layout switching
+
+`npm run build:all` builds all 10 layouts into `dist/<layout>/` subdirectories.
+`dist/index.html` also handles `?layout=<name>` redirects, and every page gets
+a header `<select>` so visitors can switch layouts without knowing the URL.
+
+**→ [Full layout switching & URL parameter docs](docs/layout-switching.md)**
 
 ## Local development
 
@@ -207,64 +110,25 @@ npm test        # runs the test suite (node:test)
 
 Open `dist/index.html` directly in a browser to preview.
 
-## `data.yaml` schema
+## data.yaml schema
 
-### Site-level fields
-
-| Field | Required | Default | Description |
-|---|---|---|---|
-| `title` | yes | — | Page `<h1>` and `<title>` |
-| `description` | no | `""` | `<meta description>` and header subtitle |
-| `lang` | no | `en` | `<html lang>` |
-| `layout` | no | `zigzag` | One of `zigzag`, `tree`, `metro`, `heatmap`, `snake`, `road`, `skyline`, `steps`, `beads`, `lollipop`; any other value fails the build |
-| `theme.preset` | no | `navy-mono` | `navy-mono` or `plain` |
-| `theme.accent` | no | preset value | Accent color (year labels, links) |
-| `theme.background` | no | preset value | Page background color |
-| `theme.text` | no | preset value | Body text color |
-| `theme.line` | no | preset value | Axis/rule line color |
-| `theme.font` | no | system font stack | CSS `font-family` string |
-
-`theme.accent`, `theme.background`, `theme.text`, and `theme.line` must be a
-hex color (`#rgb`, `#rrggbb`, or `#rrggbbaa`); any other value fails the
-build. `theme.font` only accepts letters, digits, spaces, and `, . ' " -`
-(an allowlist, since the value is inlined into the generated `<style>`
-block); anything else — including HTML/CSS metacharacters like `< > { } ; \`
-— fails the build. `theme.preset` must be one of the known presets
-(`navy-mono` or `plain`); any other value fails the build.
-
-### Item fields (`items:`, one or more required)
+Key fields at a glance:
 
 | Field | Required | Description |
-|---|---|---|
-| `id` | no | Slug for future `relations` use. Auto-generated (`item-1`, `item-2`, ...) if omitted. Must be unique across all items after normalization — duplicates fail the build |
-| `date` | yes | `YYYY-MM-DD` or `YYYY`. The full date is the sort key |
-| `title` | yes | Item heading |
-| `subtitle` | no | Small line under the year (model number, series name, etc.) |
-| `description` | no | 2–3 lines of body text |
-| `image` | no | URL, or a path relative to the **directory containing `data.yaml`** (not the repo root). Rendered as a circular photo |
-| `link` | no | Makes the whole card a link (`target="_blank" rel="noopener"`) |
-| `tags` | no | Used by the `metro` layout (one line per tag, multi-tag items become interchange stations); elements must be non-empty strings. Not rendered by other layouts |
-| `relations` | no | `parent: <id>` is used by the `tree` layout to build the genealogy. The `tree` build fails on a reference to a non-existent id or a circular chain. Ignored by other layouts |
+|-------|----------|-------------|
+| `title` | yes | Page `<h1>` and `<title>` |
+| `layout` | no | One of the 10 layout names (default: `zigzag`) |
+| `items[].date` | yes | `YYYY-MM-DD` or `YYYY` |
+| `items[].title` | yes | Item heading |
+| `items[].description` | no | 2–3 lines of body text |
+| `items[].image` | no | URL or path relative to `data.yaml` |
+| `items[].link` | no | `http:`/`https:`/`mailto:`/`tel:` only |
+| `items[].tags` | no | Used by the `metro` layout |
+| `items[].relations` | no | `parent: <id>` used by the `tree` layout |
 
-Items are sorted by `date` ascending (oldest first, top to bottom). A
-year-only date such as `2026` is treated as `2026-01-01` for sorting. The
-displayed year label uses month precision (`YYYY.MM`) when the source date
-carries a month, and falls back to `YYYY` for year-only dates.
-
-`image` local paths are resolved relative to the directory that contains
-`data.yaml`, then copied into `dist/` at build time. Absolute paths (e.g.
-`/etc/passwd`, `C:\...`), and any relative path that resolves outside that
-directory (e.g. `../../secret.png`), fail the build.
-
-`link` only accepts `http:`, `https:`, `mailto:`, and `tel:` URLs
-(case-insensitive). A relative URL (no scheme) or any other scheme —
-`javascript:`, `data:`, etc. — fails the build, since `link` is rendered as
-a raw `href` on the page.
+**→ [Full schema reference (all fields + validation rules)](docs/schema.md)**
 
 ## Embedding via iframe
-
-Add `embed.js` to the **parent page** (the site that hosts the iframe), and
-mark the iframe with `data-historymap`:
 
 ```html
 <iframe
@@ -276,109 +140,42 @@ mark the iframe with `data-historymap`:
 <script src="embed.js"></script>
 ```
 
-The generated page posts `{ type: "historymap:height", height }` to its
-parent whenever its content size changes (on load, and via `ResizeObserver`
-afterwards). `embed.js` listens for that message and resizes the matching
-iframe by comparing `event.source` to each iframe's `contentWindow` — this
-works even with multiple historymap embeds on the same page.
+`embed.js` auto-resizes the iframe via `postMessage`. Works with multiple
+embeds on the same page.
 
-Received heights are sanity-checked before being applied: only finite,
-non-negative values are used; a value above `100000` is clamped down to
-`100000`, and a non-finite value (`NaN`/`Infinity`) is ignored outright.
-
-By default `embed.js` accepts messages from any origin so it works out of
-the box. If you want to restrict it to your own historymap deployment(s),
-define an origin allowlist **before** loading `embed.js`:
-
-```html
-<script>
-  window.HISTORYMAP_ALLOWED_ORIGINS = ["https://your-user.github.io"];
-</script>
-<script src="embed.js"></script>
-```
-
-When `HISTORYMAP_ALLOWED_ORIGINS` is set to a non-empty array, `embed.js`
-ignores any message whose `event.origin` is not in the list. Leaving it
-undefined (the default) preserves the original any-origin behavior.
-
-### Astro
-
-```astro
----
-// src/components/HistoryMap.astro
----
-<iframe
-  data-historymap
-  src="https://your-user.github.io/your-repo/"
-  style="width: 100%; border: 0;"
-  title="Product History"
-/>
-<script src="/embed.js" is:inline></script>
-```
-
-Copy `embed.js` into your Astro project's `public/` directory so it's served
-at `/embed.js`.
-
-### React
-
-```jsx
-import { useEffect } from "react";
-
-export function HistoryMapEmbed() {
-  useEffect(() => {
-    function onMessage(event) {
-      const data = event.data;
-      if (!data || data.type !== "historymap:height") return;
-      const iframe = document.querySelector('iframe[data-historymap]');
-      if (iframe && iframe.contentWindow === event.source) {
-        iframe.style.height = `${data.height}px`;
-      }
-    }
-    window.addEventListener("message", onMessage);
-    return () => window.removeEventListener("message", onMessage);
-  }, []);
-
-  return (
-    <iframe
-      data-historymap
-      src="https://your-user.github.io/your-repo/"
-      style={{ width: "100%", border: 0 }}
-      title="Product History"
-    />
-  );
-}
-```
-
-(Or simply load `embed.js` as a regular `<script>` tag once, as shown above —
-either approach works.)
+**→ [Full embedding docs (Astro, React, origin allowlist)](docs/embedding.md)**
 
 ## Project structure
 
 ```
 historymap/
 ├── DESIGN.md             # full v1 design spec
+├── CHANGELOG.md          # version history
 ├── package.json
-├── data.yaml              # the data you edit
-├── embed.js               # parent-page iframe resize snippet
+├── data.yaml             # the data you edit
+├── embed.js              # parent-page iframe resize snippet
 ├── src/
-│   ├── build.mjs          # entry point
-│   ├── validate.mjs       # schema validation
-│   ├── themes.mjs         # theme presets
-│   └── renderers/
-│       ├── shared.mjs     # escapeHtml / height-notify script / document shell
-│       ├── zigzag.mjs     # one file per layout renderer
-│       ├── tree.mjs
-│       ├── metro.mjs
-│       ├── heatmap.mjs
-│       ├── snake.mjs
-│       └── road.mjs
-├── demo/                  # fictional sample data, one per layout
-├── test/
-│   └── build.test.mjs     # plus one test file per layout
-├── worker/
-│   └── index.js           # kenimoto.dev deployment glue (see note below)
+│   ├── cli.mjs           # CLI entry point
+│   ├── build.mjs         # core build logic
+│   ├── validate.mjs      # schema validation
+│   ├── screenshot.mjs    # HTML → PNG (Puppeteer)
+│   ├── themes.mjs        # theme presets
+│   └── renderers/        # one file per layout renderer
+├── mcp/
+│   ├── server.mjs        # MCP server entry point
+│   └── handlers.mjs      # tool logic (testable separately)
+├── docs/
+│   ├── cli.md            # CLI flags & puppeteer setup
+│   ├── mcp.md            # MCP server setup
+│   ├── schema.md         # data.yaml full schema reference
+│   ├── embedding.md      # iframe embedding (Astro, React, allowlist)
+│   ├── layout-switching.md  # ?layout= URL param & header switcher
+│   ├── patterns/         # layout screenshot gallery
+│   └── changelog/        # images referenced from CHANGELOG.md
+├── demo/                 # fictional sample data, one per layout
+├── test/                 # node:test suite
 └── .github/workflows/
-    └── deploy.yml          # build + deploy to GitHub Pages
+    └── deploy.yml        # build + deploy to GitHub Pages
 ```
 
 ### About `worker/` (kenimoto.dev deployment only)
