@@ -45,10 +45,14 @@ export async function screenshotHtml(htmlPath, options = {}) {
       waitUntil: "domcontentloaded",
     });
     await page.waitForSelector(".hm-page", { timeout: 10_000 });
-    // Force scroll-fade animations to their final visible state so the
-    // screenshot is not blank when IntersectionObserver hasn't fired yet.
-    // Also disable lazy-loading so off-screen images are fetched immediately.
+    // Disable all CSS transitions/animations first so the screenshot captures
+    // the fully-rendered final state, not a mid-animation frame.
+    // Also force lazy images to load immediately.
     await page.evaluate(() => {
+      const s = document.createElement("style");
+      s.textContent =
+        "*, *::before, *::after { transition: none !important; animation: none !important; }";
+      document.head.appendChild(s);
       document.querySelectorAll(".item").forEach((el) =>
         el.classList.add("visible")
       );

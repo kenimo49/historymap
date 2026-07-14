@@ -265,10 +265,10 @@ function buildStyle(theme) {
       display: flex;
       flex-direction: column;
       position: relative;
-      background: var(--hm-background);
+      background: #ffffff;
       border: 1px solid var(--hm-line);
       border-radius: 12px;
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
       overflow: hidden;
       color: inherit;
       text-decoration: none;
@@ -277,7 +277,7 @@ function buildStyle(theme) {
 
     .item-link:hover {
       transform: translateY(-4px);
-      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.16);
+      box-shadow: 0 14px 36px rgba(0, 0, 0, 0.2);
     }
 
     /* Connector line from card edge to centre axis */
@@ -303,7 +303,7 @@ function buildStyle(theme) {
     .item-card-image {
       width: 100%;
       height: 240px;
-      background: #f0f1f3;
+      background: #e8eaed;
       display: flex;
       align-items: center;
       justify-content: center;
