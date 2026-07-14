@@ -6,7 +6,8 @@ import path from "node:path";
  *
  * @param {string} htmlPath  Absolute path to the generated index.html
  * @param {object} [options]
- * @param {number} [options.width=1200]  Viewport width in pixels
+ * @param {number} [options.width=1280]           Viewport width in CSS pixels
+ * @param {number} [options.deviceScaleFactor=2]  DPR — 2 gives Retina-quality output
  * @returns {Promise<Buffer>}  PNG image buffer
  */
 export async function screenshotHtml(htmlPath, options = {}) {
@@ -22,7 +23,8 @@ export async function screenshotHtml(htmlPath, options = {}) {
     );
   }
 
-  const width = options.width ?? 1200;
+  const width = options.width ?? 1280;
+  const deviceScaleFactor = options.deviceScaleFactor ?? 2;
   let browser;
   try {
     browser = await puppeteer.launch({
@@ -40,14 +42,14 @@ export async function screenshotHtml(htmlPath, options = {}) {
 
   try {
     const page = await browser.newPage();
-    await page.setViewport({ width, height: 800 });
+    await page.setViewport({ width, height: 800, deviceScaleFactor });
     await page.goto(`file://${path.resolve(htmlPath)}`, {
       waitUntil: "domcontentloaded",
     });
     await page.waitForSelector(".hm-page", { timeout: 10_000 });
-    // Disable all CSS transitions/animations first so the screenshot captures
-    // the fully-rendered final state, not a mid-animation frame.
-    // Also force lazy images to load immediately.
+    // Disable all CSS transitions/animations so the screenshot captures the
+    // fully-rendered final state rather than a mid-animation frame.
+    // Also promote lazy images to eager so off-screen covers are fetched.
     await page.evaluate(() => {
       const s = document.createElement("style");
       s.textContent =
@@ -66,7 +68,7 @@ export async function screenshotHtml(htmlPath, options = {}) {
     const scrollHeight = await page.evaluate(
       () => document.documentElement.scrollHeight
     );
-    await page.setViewport({ width, height: Math.max(scrollHeight, 100) });
+    await page.setViewport({ width, height: Math.max(scrollHeight, 100), deviceScaleFactor });
     return await page.screenshot({ type: "png", fullPage: false });
   } finally {
     await browser.close();
